@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy — weekly view</title>
+<style>
+  :root{
+    --bg:#14150f;
+    --card:#1c1d16;
+    --card-2:#22231a;
+    --line:#33352a;
+    --ink:#eae7dc;
+    --ink-dim:#a7a495;
+    --ink-faint:#6f6d61;
+    --gold:#e8b34d;
+    --up:#7fae8a;
+    --down:#c0705a;
+    --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    padding:14px 14px 40px;
+  }
+  a{color:inherit;}
+
+  .topline{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .topline .who{
+    font-size:13px;
+    color:var(--ink-dim);
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+  }
+  .topline .who button{
+    background:none;border:none;color:var(--ink-faint);
+    font-size:12px;text-decoration:underline;cursor:pointer;padding:0;
+    font-family:var(--sans);
+  }
+  .topline .week{
+    font-size:13px;color:var(--ink-faint);
+    font-family:var(--mono);
+  }
+
+  .userbox{
+    display:none;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .userbox.show{display:flex;}
+  .userbox input{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:6px;
+    padding:8px 10px;
+    font-size:14px;
+    font-family:var(--sans);
+  }
+  .userbox button{
+    background:var(--gold);
+    border:none;
+    color:#241a06;
+    font-weight:600;
+    border-radius:6px;
+    padding:8px 12px;
+    font-size:13px;
+    cursor:pointer;
+  }
+
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .tab{
+    background:var(--card);
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    padding:7px 12px 8px;
+    border-radius:10px;
+    font-size:13px;
+    cursor:pointer;
+    white-space:nowrap;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    font-family:var(--sans);
+    min-width:0;
+  }
+  .tab .tname{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    max-width:120px;
+  }
+  .tab .tscore{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-faint);
+  }
+  .tab .tscore .win{color:var(--up);}
+  .tab .tscore .loss{color:var(--down);}
+  .tab.active{
+    border-color:var(--gold);
+  }
+  .tab.active .tname{color:var(--gold);font-weight:600;}
+
+  .status{
+    color:var(--ink-faint);
+    font-size:13px;
+    padding:30px 0;
+    text-align:center;
+  }
+  .status.error{color:var(--down);}
+
+  .scorecard{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .scorerow{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+  }
+  .side{width:44%;}
+  .side.opp{text-align:right;}
+  .teamname{
+    font-size:13px;
+    color:var(--ink-dim);
+    margin-bottom:2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .teamuser{
+    font-size:11px;
+    color:var(--ink-faint);
+    margin-bottom:6px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .score{
+    font-family:var(--mono);
+    font-size:32px;
+    letter-spacing:-0.5px;
+  }
+  .score.win{color:var(--up);}
+  .score.loss{color:var(--down);}
+  .statusline{
+    font-size:10px;
+    color:var(--ink-faint);
+    margin-top:6px;
+    font-family:var(--mono);
+  }
+  .statusline .live{color:var(--gold);}
+  .vs{
+    font-size:11px;
+    color:var(--ink-faint);
+    padding-bottom:8px;
+    font-family:var(--mono);
+  }
+
+  .section-label{
+    font-size:12px;
+    color:var(--ink-faint);
+    margin:18px 0 8px;
+    padding-left:2px;
+  }
+
+  .plist{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .prow{
+    padding:9px 12px;
+    border-bottom:1px solid var(--line);
+  }
+  .prow:last-child{border-bottom:none;}
+  .prow-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .prow .pos{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-faint);
+    width:30px;
+    flex-shrink:0;
+  }
+  .prow .pname{
+    flex:1;
+    font-size:14px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .pstatus{
+    font-family:var(--mono);
+    font-size:10px;
+    font-weight:600;
+    padding:1px 4px;
+    border-radius:4px;
+    flex-shrink:0;
+  }
+  .pstatus-mid{background:rgba(232,179,77,0.18);color:var(--gold);}
+  .pstatus-out{background:rgba(192,112,90,0.18);color:var(--down);}
+  .prow .pteam{
+    font-size:11px;
+    color:var(--ink-faint);
+    width:30px;
+    text-align:right;
+    flex-shrink:0;
+  }
+  .prow .ppts{
+    font-family:var(--mono);
+    font-size:14px;
+    width:48px;
+    text-align:right;
+    flex-shrink:0;
+  }
+  .prow-sub{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-faint);
+    padding-left:40px;
+    margin-top:3px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .dual{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .dcol{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    min-width:0;
+  }
+  .dcol-head{
+    font-size:11px;
+    color:var(--ink-faint);
+    padding:8px 10px 6px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    border-bottom:1px solid var(--line);
+  }
+  .drow{
+    padding:7px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .drow:last-child{border-bottom:none;}
+  .dname{
+    font-size:12.5px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    min-width:0;
+    flex:1;
+  }
+  .dtop{
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .dpts{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink);
+    flex-shrink:0;
+  }
+  .dmeta{
+    display:flex;
+    align-items:center;
+    margin-top:2px;
+    gap:6px;
+  }
+  .dtime{
+    font-size:10px;
+    color:var(--ink-faint);
+    font-family:var(--mono);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    margin-left:auto;
+  }
+  .dtime.live{color:var(--gold);}
+  .dtime.final{color:var(--ink-faint);}
+  .flags{
+    display:flex;
+    gap:4px;
+    flex-shrink:0;
+  }
+  .flag{
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    font-size:9px;
+    font-family:var(--mono);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+  }
+  .flag-mine{background:rgba(127,174,138,0.18);color:var(--up);}
+  .flag-opp{background:rgba(192,112,90,0.18);color:var(--down);}
+  .flag-bench{background:rgba(167,164,149,0.18);color:var(--ink-faint);}
+
+  .bench-toggle{
+    background:none;
+    border:none;
+    color:var(--ink-faint);
+    font-size:13px;
+    cursor:pointer;
+    padding:10px 2px;
+    font-family:var(--sans);
+    display:flex;
+    align-items:center;
+    gap:5px;
+  }
+  .bench-wrap{display:none;}
+  .bench-wrap.show{display:block;}
+
+  .refresh{
+    text-align:center;
+    margin-top:20px;
+  }
+  .refresh button{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    padding:7px 14px;
+    border-radius:16px;
+    font-size:12px;
+    cursor:pointer;
+    font-family:var(--sans);
+  }
+</style>
+</head>
+<body>
+
+<div class="topline">
+  <div class="who">@<span id="unameLabel">acrogers</span> <button id="changeUser">change</button></div>
+  <div class="week" id="weekLabel">—</div>
+</div>
+
+<div class="userbox" id="userbox">
+  <input type="text" id="unameInput" placeholder="sleeper username" value="acrogers">
+  <button id="loadUser">Load</button>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div id="content">
+  <div class="status" id="status">Loading your leagues…</div>
+</div>
+
+<div class="refresh"><button id="refreshBtn">Refresh scores</button></div>
+
+<script>
+const API = 'https://api.sleeper.app/v1';
+let username = 'acrogers';
+let userId = null;
+let season = null;
+let week = null;
+let leagues = [];
+let leagueBundles = [];
+let activeLeagueIndex = 0;
+let benchOpen = false;
+let playersMap = null;
+let playersLoading = null;
+let scheduleByTeam = {};
+let statsMap = null;
+
+const el = id => document.getElementById(id);
+
+function fmtPts(n){
+  if(n === undefined || n === null) return '—';
+  return (Math.round(n*100)/100).toFixed(1);
+}
+
+async function getJSON(url){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('Request failed: ' + url);
+  return res.json();
+}
+
+function ensurePlayers(){
+  if(playersMap) return Promise.resolve(playersMap);
+  if(playersLoading) return playersLoading;
+  playersLoading = getJSON(`${API}/players/nfl`).then(data => {
+    playersMap = data;
+    return data;
+  }).catch(err => {
+    playersLoading = null;
+    throw err;
+  });
+  return playersLoading;
+}
+
+async function loadGameContext(){
+  const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&year=${season}&seasontype=2`;
+  const [espnData, statsData] = await Promise.all([
+    getJSON(espnUrl).catch(() => null),
+    getJSON(`${API}/stats/nfl/regular/${season}/${week}`).catch(() => null)
+  ]);
+  if(espnData) scheduleByTeam = buildScheduleMap(espnData);
+  if(statsData) statsMap = statsData;
+}
+
+function buildScheduleMap(espnData){
+  const map = {};
+  (espnData.events || []).forEach(ev => {
+    const comp = ev.competitions && ev.competitions[0];
+    if(!comp) return;
+    const statusType = comp.status && comp.status.type;
+    const state = statusType ? statusType.state : null;
+    const detail = statusType ? statusType.shortDetail : '';
+    (comp.competitors || []).forEach(c => {
+      const abbr = c.team && c.team.abbreviation;
+      if(abbr) map[abbr] = {state, detail};
+    });
+  });
+  return map;
+}
+
+const STAT_FIELDS = [
+  {key:'pass_yd', label:'pass yd'},
+  {key:'pass_td', label:'pass TD'},
+  {key:'pass_int', label:'INT'},
+  {key:'rush_yd', label:'rush yd'},
+  {key:'rush_td', label:'rush TD'},
+  {key:'rec', label:'rec'},
+  {key:'rec_yd', label:'rec yd'},
+  {key:'rec_td', label:'rec TD'},
+  {key:'fgm', label:'FG'},
+  {key:'xpm', label:'XP'},
+  {key:'sack', label:'sack'},
+  {key:'def_int', label:'INT'},
+  {key:'ff', label:'FF'},
+  {key:'fr', label:'FR'},
+  {key:'def_td', label:'TD'}
+];
+
+function fmtStat(v){
+  return (v % 1 === 0) ? v : Math.round(v * 10) / 10;
+}
+
+function statByline(pid){
+  const s = statsMap && statsMap[pid];
+  if(!s) return '';
+  const parts = [];
+  for(const f of STAT_FIELDS){
+    const v = s[f.key];
+    if(v){
+      parts.push(`${fmtStat(v)} ${f.label}`);
+      if(parts.length >= 3) break;
+    }
+  }
+  return parts.join(' · ');
+}
+
+function gameSubline(pid, info){
+  if(!pid || pid === '0' || !info.team) return '';
+  const sched = scheduleByTeam[info.team];
+  if(!sched) return '';
+  if(sched.state === 'pre') return sched.detail || 'Scheduled';
+  const byline = statByline(pid);
+  if(sched.state === 'post') return byline ? `${byline} · Final` : 'Final';
+  return byline ? `${byline} · ${sched.detail}` : (sched.detail || 'Live');
+}
+
+function timingBrief(info){
+  if(!info.team) return {text:'', cls:''};
+  const sched = scheduleByTeam[info.team];
+  if(!sched) return {text:'', cls:''};
+  if(sched.state === 'pre') return {text: sched.detail || 'Scheduled', cls:''};
+  if(sched.state === 'post') return {text:'Final', cls:'final'};
+  return {text:'Live', cls:'live'};
+}
+
+function lastNameOf(name){
+  const parts = (name || '').trim().split(' ');
+  return parts[parts.length - 1] || name;
+}
+
+function compactRowHTML(pid, pts){
+  const info = playerLabel(pid);
+  const timing = timingBrief(info);
+  const flags = crossLeagueFlags(pid, activeLeagueIndex);
+  let badges = '';
+  if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">S</span>`;
+  if(flags.oppStart) badges += `<span class="flag flag-opp" title="Starting against you in your other league">O</span>`;
+  if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">B</span>`;
+  return `<div class="drow">
+    <div class="dtop">
+      <div class="dname">${escapeHtml(info.name)}</div>
+      ${statusBadge(info.status)}
+    </div>
+    <div class="dmeta">
+      <span class="dpts">${fmtPts(pts)}</span>
+      ${badges ? `<div class="flags">${badges}</div>` : ''}
+      <span class="dtime ${timing.cls}">${escapeHtml(timing.text)}</span>
+    </div>
+  </div>`;
+}
+
+function playerLabel(pid){
+  if(pid === '0' || !pid) return {name:'Empty', team:'', position:'', status:''};
+  const p = playersMap && playersMap[pid];
+  if(!p) return {name: pid, team:'', position:'', status:''};
+  if(p.position === 'DEF') return {name: p.full_name || pid, team: p.team || '', position:'DEF', status:''};
+  const name = p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim() || pid;
+  return {name, team: p.team || '', position: p.position || '', status: p.injury_status || ''};
+}
+
+const STATUS_ABBR = {
+  'Questionable':'Q', 'Doubtful':'D', 'Out':'O', 'IR':'IR',
+  'PUP':'PUP', 'Suspended':'SUS', 'COVID-19':'COV', 'NA':'NA'
+};
+
+function statusCounts(entry){
+  const counts = {played:0, live:0, upcoming:0};
+  if(!entry || !entry.starters) return counts;
+  entry.starters.forEach(pid => {
+    if(pid === '0' || !pid) return;
+    const info = playerLabel(pid);
+    if(!info.team) return;
+    const sched = scheduleByTeam[info.team];
+    if(!sched) return;
+    if(sched.state === 'pre') counts.upcoming++;
+    else if(sched.state === 'post') counts.played++;
+    else counts.live++;
+  });
+  return counts;
+}
+
+function statuslineHTML(entry){
+  const c = statusCounts(entry);
+  return `${c.played} final · <span class="live">${c.live} live</span> · ${c.upcoming} upcoming`;
+}
+
+function statusBadge(status){
+  if(!status) return '';
+  const abbr = STATUS_ABBR[status] || status;
+  const severe = status === 'Out' || status === 'IR' || status === 'Suspended' || status === 'Doubtful';
+  const cls = severe ? 'pstatus-out' : 'pstatus-mid';
+  return `<span class="pstatus ${cls}" title="${escapeHtml(status)}">${escapeHtml(abbr)}</span>`;
+}
+
+async function init(){
+  try{
+    const state = await getJSON(`${API}/state/nfl`);
+    season = state.season;
+    week = state.display_week || state.week || 1;
+    el('weekLabel').textContent = `week ${week}`;
+  }catch(e){
+    el('weekLabel').textContent = '';
+  }
+  await loadUserAndLeagues();
+}
+
+async function loadUserAndLeagues(){
+  el('unameLabel').textContent = username;
+  el('tabs').innerHTML = '';
+  el('content').innerHTML = '<div class="status" id="status">Loading your leagues…</div>';
+  try{
+    const user = await getJSON(`${API}/user/${encodeURIComponent(username)}`);
+    if(!user || !user.user_id) throw new Error('User not found');
+    userId = user.user_id;
+    leagues = await getJSON(`${API}/user/${userId}/leagues/nfl/${season}`);
+    if(!leagues || leagues.length === 0){
+      el('content').innerHTML = '<div class="status">No leagues found for this season.</div>';
+      return;
+    }
+    ensurePlayers().catch(()=>{});
+    activeLeagueIndex = 0;
+    await loadAllBundles();
+    renderTabs();
+    showLeague(0);
+  }catch(e){
+    el('content').innerHTML = `<div class="status error">Couldn't load — check the username and try again.</div>`;
+  }
+}
+
+async function loadAllBundles(opts){
+  const silent = opts && opts.silent;
+  if(!silent){
+    el('tabs').innerHTML = '';
+    el('content').innerHTML = '<div class="status">Loading your matchups…</div>';
+  }
+  const [results] = await Promise.all([
+    Promise.all(leagues.map(async lg => {
+      try{
+        const [rosters, users, matchups] = await Promise.all([
+          getJSON(`${API}/league/${lg.league_id}/rosters`),
+          getJSON(`${API}/league/${lg.league_id}/users`),
+          getJSON(`${API}/league/${lg.league_id}/matchups/${week}`)
+        ]);
+        const summary = computeSummary(lg, rosters, users, matchups);
+        return {league: lg, rosters, users, matchups, summary, error: null};
+      }catch(e){
+        return {league: lg, error: e};
+      }
+    })),
+    loadGameContext().catch(() => {})
+  ]);
+  leagueBundles = results;
+  if(!silent) await ensurePlayers().catch(()=>{});
+}
+
+function renderTabs(){
+  const tabs = el('tabs');
+  tabs.innerHTML = '';
+  leagueBundles.forEach((b, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (i === activeLeagueIndex ? ' active' : '');
+    let scoreLine = '<span class="tscore">—</span>';
+    if(b.summary){
+      const s = b.summary;
+      scoreLine = `<span class="tscore"><span class="${s.myClass}">${fmtPts(s.myPts)}</span> – <span class="${s.oppClass}">${fmtPts(s.oppPts)}</span></span>`;
+    }
+    btn.innerHTML = `<span class="tname">${escapeHtml(leagueDisplayName(b.league.name))}</span>${scoreLine}`;
+    btn.onclick = () => {
+      activeLeagueIndex = i;
+      renderTabs();
+      showLeague(i);
+    };
+    tabs.appendChild(btn);
+  });
+}
+
+function showLeague(index){
+  const bundle = leagueBundles[index];
+  if(!bundle || bundle.error){
+    el('content').innerHTML = '<div class="status error">Couldn\'t load this league right now.</div>';
+    return;
+  }
+  renderLeague(bundle.league, bundle.rosters, bundle.users, bundle.matchups, bundle.summary);
+}
+
+function teamNameFor(userObj){
+  if(!userObj) return 'Unknown';
+  return (userObj.metadata && userObj.metadata.team_name) || userObj.display_name || 'Unknown';
+}
+
+const LEAGUE_ALIASES = {
+  'Yes Fun League': 'Purdue',
+  "The Ramily's Family friends": 'Colorado'
+};
+
+function leagueDisplayName(name){
+  return LEAGUE_ALIASES[name] || name;
+}
+
+function crossLeagueFlags(pid, currentIndex){
+  const flags = {mineStart:false, mineBench:false, oppStart:false};
+  if(pid === '0' || !pid) return flags;
+  leagueBundles.forEach((b, i) => {
+    if(i === currentIndex || !b.summary) return;
+    const s = b.summary;
+    if(s.myEntry && s.myEntry.starters && s.myEntry.starters.includes(pid)){
+      flags.mineStart = true;
+    }else if(s.myRoster && (s.myRoster.players||[]).includes(pid)){
+      flags.mineBench = true;
+    }
+    if(s.oppEntry && s.oppEntry.starters && s.oppEntry.starters.includes(pid)){
+      flags.oppStart = true;
+    }
+  });
+  return flags;
+}
+
+function computeSummary(league, rosters, users, matchups){
+  const usersById = {};
+  users.forEach(u => usersById[u.user_id] = u);
+
+  const myRoster = rosters.find(r => r.owner_id === userId);
+  if(!myRoster) return null;
+
+  const myEntry = matchups.find(m => m.roster_id === myRoster.roster_id);
+  let oppEntry = null, oppRoster = null;
+  if(myEntry && myEntry.matchup_id != null){
+    oppEntry = matchups.find(m => m.matchup_id === myEntry.matchup_id && m.roster_id !== myRoster.roster_id);
+    if(oppEntry) oppRoster = rosters.find(r => r.roster_id === oppEntry.roster_id);
+  }
+
+  const myPts = myEntry ? myEntry.points : 0;
+  const oppPts = oppEntry ? oppEntry.points : 0;
+  const myUser = usersById[myRoster.owner_id];
+  const oppUser = oppRoster ? usersById[oppRoster.owner_id] : null;
+  const myName = teamNameFor(myUser);
+  const oppName = oppRoster ? teamNameFor(oppUser) : 'No matchup this week';
+  const myUsername = myUser ? myUser.username : '';
+  const oppUsername = oppUser ? oppUser.username : '';
+
+  let myClass = '', oppClass = '';
+  if(oppEntry){
+    myClass = myPts > oppPts ? 'win' : (myPts < oppPts ? 'loss' : '');
+    oppClass = oppPts > myPts ? 'win' : (oppPts < myPts ? 'loss' : '');
+  }
+
+  return {myRoster, myEntry, oppEntry, oppRoster, myPts, oppPts, myName, oppName, myUsername, oppUsername, myClass, oppClass};
+}
+
+function renderLeague(league, rosters, users, matchups, summary){
+  const {myRoster, myEntry, oppEntry, myName, oppName, myUsername, oppUsername, myPts, oppPts, myClass, oppClass} = summary;
+
+  let myCompact = '';
+  let oppCompact = '';
+  let benchRows = '';
+
+  if(myEntry && myEntry.starters){
+    myEntry.starters.forEach((pid, i) => {
+      const pts = myEntry.starters_points ? myEntry.starters_points[i] : undefined;
+      myCompact += compactRowHTML(pid, pts);
+    });
+    const benchIds = (myRoster.players || []).filter(pid => !myEntry.starters.includes(pid));
+    benchIds.forEach(pid => {
+      const info = playerLabel(pid);
+      const pts = myEntry.players_points ? myEntry.players_points[pid] : undefined;
+      const flags = crossLeagueFlags(pid, activeLeagueIndex);
+      benchRows += prowHTML('BN', info, pts, flags, pid);
+    });
+  }
+  if(oppEntry && oppEntry.starters){
+    oppEntry.starters.forEach((pid, i) => {
+      const pts = oppEntry.starters_points ? oppEntry.starters_points[i] : undefined;
+      oppCompact += compactRowHTML(pid, pts);
+    });
+  }
+
+  el('content').innerHTML = `
+    <div class="scorecard">
+      <div class="scorerow">
+        <div class="side">
+          <div class="teamname">${escapeHtml(myName)}</div>
+          <div class="teamuser">${myUsername ? '@' + escapeHtml(myUsername) : ''}</div>
+          <div class="score ${myClass}">${fmtPts(myPts)}</div>
+          <div class="statusline">${statuslineHTML(myEntry)}</div>
+        </div>
+        <div class="vs">vs</div>
+        <div class="side opp">
+          <div class="teamname">${escapeHtml(oppName)}</div>
+          <div class="teamuser">${oppUsername ? '@' + escapeHtml(oppUsername) : ''}</div>
+          <div class="score ${oppClass}">${fmtPts(oppPts)}</div>
+          <div class="statusline">${statuslineHTML(oppEntry)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">starters</div>
+    <div class="dual">
+      <div class="dcol">
+        <div class="dcol-head">${escapeHtml(myName)}</div>
+        ${myCompact || '<div class="drow"><div class="dname">No lineup set</div></div>'}
+      </div>
+      <div class="dcol">
+        <div class="dcol-head">${escapeHtml(oppName)}</div>
+        ${oppCompact || '<div class="drow"><div class="dname">—</div></div>'}
+      </div>
+    </div>
+
+    <button class="bench-toggle" id="benchToggle">${benchOpen ? '▾' : '▸'} bench (${(myRoster.players||[]).length - (myEntry && myEntry.starters ? myEntry.starters.length : 0)})</button>
+    <div class="bench-wrap${benchOpen ? ' show' : ''}" id="benchWrap">
+      <div class="plist">${benchRows || ''}</div>
+    </div>
+  `;
+
+  const toggle = el('benchToggle');
+  const wrap = el('benchWrap');
+  toggle.onclick = () => {
+    benchOpen = !benchOpen;
+    wrap.classList.toggle('show', benchOpen);
+    toggle.textContent = toggle.textContent.replace(benchOpen ? '▸' : '▾', benchOpen ? '▾' : '▸');
+  };
+}
+
+function prowHTML(label, info, pts, flags, pid){
+  flags = flags || {};
+  let badges = '';
+  if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">S</span>`;
+  if(flags.oppStart) badges += `<span class="flag flag-opp" title="Starting against you in your other league">O</span>`;
+  if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">B</span>`;
+  const sub = gameSubline(pid, info);
+  return `<div class="prow">
+    <div class="prow-top">
+      <div class="pos">${escapeHtml(label)}</div>
+      <div class="pname">${escapeHtml(info.name)}</div>
+      ${statusBadge(info.status)}
+      <div class="pteam">${escapeHtml(info.team)}</div>
+      ${badges ? `<div class="flags">${badges}</div>` : ''}
+      <div class="ppts">${fmtPts(pts)}</div>
+    </div>
+    ${sub ? `<div class="prow-sub">${escapeHtml(sub)}</div>` : ''}
+  </div>`;
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+el('changeUser').onclick = () => {
+  el('userbox').classList.toggle('show');
+};
+el('loadUser').onclick = () => {
+  const v = el('unameInput').value.trim();
+  if(v){
+    username = v;
+    el('userbox').classList.remove('show');
+    loadUserAndLeagues();
+  }
+};
+el('refreshBtn').onclick = async () => {
+  if(!leagues.length) return;
+  await loadAllBundles();
+  renderTabs();
+  showLeague(activeLeagueIndex);
+};
+
+let isTicking = false;
+let autoRefreshTimer = null;
+
+async function tick(){
+  if(isTicking || !leagues.length) return;
+  isTicking = true;
+  try{
+    await loadAllBundles({silent:true});
+    renderTabs();
+    showLeague(activeLeagueIndex);
+  }catch(e){
+    // keep last known data on a failed tick
+  }finally{
+    isTicking = false;
+  }
+}
+
+function startAutoRefresh(){
+  if(autoRefreshTimer) return;
+  autoRefreshTimer = setInterval(tick, 1000);
+}
+
+function stopAutoRefresh(){
+  if(autoRefreshTimer){
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible'){
+    startAutoRefresh();
+    tick();
+  }else{
+    stopAutoRefresh();
+  }
+});
+
+if(document.visibilityState === 'visible') startAutoRefresh();
+
+init();
+</script>
+</body>
+</html>
