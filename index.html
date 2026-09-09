@@ -366,6 +366,13 @@
     margin-bottom:16px;
   }
   .suggest.neutral{border-color:var(--line);}
+  .suggest.neutral .suggest-title{color:var(--ink-dim);}
+  .suggest-sub{
+    font-size:11px;
+    color:var(--ink-faint);
+    margin-top:3px;
+    font-weight:400;
+  }
   .suggest-head{
     display:flex;
     justify-content:space-between;
@@ -753,16 +760,18 @@ function buildScheduleMap(espnData){
     const detail = statusType ? statusType.shortDetail : '';
     let weekday = '';
     let timeStr = '';
+    let kickoffMs = null;
     if(ev.date){
       const dt = new Date(ev.date);
       if(!isNaN(dt.getTime())){
         weekday = dt.toLocaleDateString('en-US', {weekday: 'short'});
         timeStr = dt.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+        kickoffMs = dt.getTime();
       }
     }
     (comp.competitors || []).forEach(c => {
       const abbr = c.team && c.team.abbreviation;
-      if(abbr) map[normTeamAbbr(abbr)] = {state, detail, weekday, time: timeStr};
+      if(abbr) map[normTeamAbbr(abbr)] = {state, detail, weekday, time: timeStr, kickoffMs};
     });
   });
   return map;
@@ -1208,6 +1217,12 @@ const SLOT_ELIGIBILITY = {
   SUPER_FLEX: ['QB','RB','WR','TE'],
 };
 
+// "Practically equal" projection band for the flex late-kickoff tiebreak
+// below -- deliberately small so it only catches genuine near-ties/noise,
+// never overrides a real scoring edge (this app has surfaced legitimate
+// swap recommendations as small as 0.6-0.7 pts).
+const FLEX_TIE_EPSILON = 0.3;
+
 function startableSlots(rosterPositions){
   const skip = new Set(['BN','IR','TAXI']);
   return (rosterPositions || []).filter(s => !skip.has(s));
@@ -1258,15 +1273,28 @@ function optimalLineup(rosterPositions, players, forcedIds, currentStarterIds){
 
   for(const idx of slotOrder){
     const eligible = SLOT_ELIGIBILITY[rosterPositions[idx]] || [];
-    let best = null;
-    for(const p of available){
-      if(usedIds.has(p.id) || !eligible.includes(p.position)) continue;
-      if(!best || p.proj_pts > best.proj_pts) best = p;
+    const candidates = available.filter(p => !usedIds.has(p.id) && eligible.includes(p.position));
+    if(candidates.length === 0) continue;
+
+    const maxPts = Math.max(...candidates.map(p => p.proj_pts));
+    // Score always wins beyond FLEX_TIE_EPSILON. Only within that narrow
+    // "practically equal" band, and only for a FLEX-type slot (eligible
+    // for more than one position), does a later kickoff break the tie --
+    // it keeps that roster spot swappable longer, so you can react to
+    // early-game injury news before it locks. Comparing against the true
+    // max (not a rolling "best so far") means this can never walk the
+    // pick meaningfully below the top score through a chain of small steps.
+    let best;
+    const isFlexSlot = eligible.length > 1;
+    const tied = isFlexSlot ? candidates.filter(p => maxPts - p.proj_pts <= FLEX_TIE_EPSILON) : null;
+    if(tied && tied.length > 1){
+      best = tied.reduce((b, p) => ((p.kickoffMs || 0) > (b.kickoffMs || 0) ? p : b));
+    }else{
+      best = candidates.reduce((b, p) => (p.proj_pts > b.proj_pts ? p : b));
     }
-    if(best){
-      usedIds.add(best.id);
-      result[idx] = best;
-    }
+
+    usedIds.add(best.id);
+    result[idx] = best;
   }
   return result;
 }
@@ -1366,10 +1394,12 @@ function buildSuggestion(league, myRoster, myEntry){
     .map(pid => {
       const info = playerLabel(pid);
       const proj = getPlayerProjection(pid, scoringSettings);
+      const sched = info.team ? scheduleByTeam[info.team] : null;
       return {
         id: pid, name: info.name, position: info.position,
         proj_pts: proj.proj_pts, source: proj.source, confidence: proj.confidence,
         locked: isPlayerLocked(pid), isCurrentStarter: currentStarterSet.has(pid),
+        kickoffMs: sched ? sched.kickoffMs : null,
       };
     });
   const playersById = {};
@@ -1394,16 +1424,27 @@ function buildSuggestion(league, myRoster, myEntry){
   const keyedChanges = result.changes.map(c => ({...c, key: suggestionKey(league.league_id, c)}));
   const visibleChanges = keyedChanges.filter(c => !dismissed.has(c.key));
   const dismissedCount = keyedChanges.length - visibleChanges.length;
-  const visibleGain = visibleChanges.reduce((sum, c) => sum + c.gain, 0);
 
-  result.changes = visibleChanges;
+  // A change on a FLEX-type slot with a near-zero gain isn't a real scoring
+  // edge -- it's the late-kickoff tiebreak above trading a hair of expected
+  // value for roster flexibility. That's a fundamentally different kind of
+  // recommendation (nice-to-have, not "you should do this for points"), so
+  // it's split into its own bucket instead of polluting the score-driven
+  // "+X pts" card with a swap that isn't really about points.
+  const isFlexSlotChange = c => (SLOT_ELIGIBILITY[c.slot] || []).length > 1;
+  const scoreChanges = visibleChanges.filter(c => !(isFlexSlotChange(c) && Math.abs(c.gain) <= FLEX_TIE_EPSILON));
+  const flexChanges = visibleChanges.filter(c => isFlexSlotChange(c) && Math.abs(c.gain) <= FLEX_TIE_EPSILON);
+  const scoreGain = scoreChanges.reduce((sum, c) => sum + c.gain, 0);
+
+  result.changes = scoreChanges;
+  result.flexChanges = flexChanges;
   result.dismissedCount = dismissedCount;
-  result.gain = visibleGain;
-  result.message = visibleChanges.length === 0
+  result.gain = scoreGain;
+  result.message = scoreChanges.length === 0
     ? (dismissedCount > 0
         ? `${dismissedCount} suggestion${dismissedCount > 1 ? 's' : ''} dismissed`
         : 'Your lineup is already optimal.')
-    : `${visibleChanges.length} change${visibleChanges.length > 1 ? 's' : ''} recommended, +${fmtPts(visibleGain)} pts`;
+    : `${scoreChanges.length} change${scoreChanges.length > 1 ? 's' : ''} recommended, +${fmtPts(scoreGain)} pts`;
 
   // Mid-week drift: Sleeper's projection moving a lot since our weekly
   // baseline usually means real news (injury to this player or a
@@ -1442,11 +1483,44 @@ function driftHTML(driftAlerts){
   </div>`;
 }
 
+// Near-tied FLEX swaps where a later kickoff broke the tie -- not a real
+// scoring edge, so this gets its own card instead of sitting in the
+// "+X pts" one where a ~0 point "gain" would look like a broken suggestion.
+function flexTimingHTML(flexChanges){
+  if(!flexChanges || flexChanges.length === 0) return '';
+  const rows = flexChanges.map(c => `
+    <div class="swap">
+      <div class="swap-head">
+        <div class="swap-slot">${escapeHtml(c.slot)}</div>
+        <button class="swap-dismiss" data-key="${escapeHtml(c.key)}" title="Ignore this suggestion">&times; ignore</button>
+      </div>
+      <div class="swap-row">
+        <div class="swap-player swap-out"><span class="swap-name">${escapeHtml(c.bench)}</span></div>
+        <div class="swap-pts">${fmtPts(c.benchPts)}</div>
+      </div>
+      <div class="swap-row">
+        <span class="swap-arrow">&#8627;</span>
+        <div class="swap-player swap-in"><span class="swap-name">${escapeHtml(c.start)}</span></div>
+        <div class="swap-pts">${fmtPts(c.startPts)}</div>
+      </div>
+    </div>`).join('');
+  return `<div class="suggest neutral">
+    <div class="suggest-head">
+      <div>
+        <div class="suggest-title">Flex timing (${flexChanges.length})</div>
+        <div class="suggest-sub">near-identical projection &mdash; later kickoff keeps this slot swappable longer</div>
+      </div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
 function suggestionHTML(result){
   if(!result) return '';
   const drift = driftHTML(result.driftAlerts);
+  const flexTiming = flexTimingHTML(result.flexChanges);
   if(result.changes.length === 0){
-    return `${drift}<div class="suggest neutral"><div class="suggest-empty"><span class="check">&#10003;</span> ${escapeHtml(result.message)}</div></div>${lockNoteHTML(result)}`;
+    return `${drift}<div class="suggest neutral"><div class="suggest-empty"><span class="check">&#10003;</span> ${escapeHtml(result.message)}</div></div>${lockNoteHTML(result)}${flexTiming}`;
   }
   const rows = result.changes.map(c => `
     <div class="swap">
@@ -1474,7 +1548,7 @@ function suggestionHTML(result){
       <div class="suggest-gain">+${fmtPts(result.gain)} pts</div>
     </div>
     ${rows}
-  </div>${lockNoteHTML(result)}`;
+  </div>${lockNoteHTML(result)}${flexTiming}`;
 }
 
 function teamProjectedTotal(entry, scoringSettings){
