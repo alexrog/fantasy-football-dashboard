@@ -247,10 +247,9 @@
   .pstatus-mid{background:rgba(232,179,77,0.18);color:var(--gold);}
   .pstatus-out{background:rgba(192,112,90,0.18);color:var(--down);}
   .prow .pteam{
+    font-family:var(--mono);
     font-size:11px;
     color:var(--ink-faint);
-    width:30px;
-    text-align:right;
     flex-shrink:0;
   }
   .ppts-col{
@@ -277,6 +276,12 @@
     align-items:center;
     gap:6px;
     margin-top:2px;
+  }
+  @media (max-width:480px){
+    .prow-top{gap:6px;}
+    .prow-mainline{gap:6px;}
+    .prow-sub{gap:4px;}
+    .ppts-col{min-width:36px;}
   }
   .prow-subtext{
     font-family:var(--mono);
@@ -2002,10 +2007,13 @@ function prowHTML(label, info, pts, flags, pid, scoringSettings){
         <div class="prow-mainline">
           ${label ? `<div class="pos">${escapeHtml(label)}</div>` : ''}
           <div class="pname">${escapeHtml(info.name)}</div>
-          ${badges ? `<div class="flags">${badges}</div>` : ''}
-          <div class="pteam">${escapeHtml(info.team)}</div>
+          ${statusBadge(info.status)}
         </div>
-        ${(statusBadge(info.status) || sub) ? `<div class="prow-sub">${statusBadge(info.status)}${sub ? `<span class="prow-subtext">${escapeHtml(sub)}</span>` : ''}</div>` : ''}
+        <div class="prow-sub">
+          ${info.position !== 'DEF' ? `<span class="pteam">${escapeHtml(info.team)}</span>` : ''}
+          ${sub ? `<span class="prow-subtext">${escapeHtml(sub)}</span>` : ''}
+          ${badges ? `<span class="flags">${badges}</span>` : ''}
+        </div>
       </div>
       <div class="ppts-col">
         <div class="ppts">${fmtPts(pts)}</div>
