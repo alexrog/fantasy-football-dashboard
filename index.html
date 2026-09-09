@@ -204,7 +204,19 @@
     border-bottom:1px solid var(--line);
   }
   .prow:last-child{border-bottom:none;}
+  .prow[data-pid]{cursor:pointer;}
   .prow-top{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .prow-left{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .prow-mainline{
     display:flex;
     align-items:center;
     gap:10px;
@@ -218,10 +230,11 @@
   }
   .prow .pname{
     flex:1;
-    font-size:14px;
+    font-size:12.5px;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
+    min-width:0;
   }
   .pstatus{
     font-family:var(--mono);
@@ -240,22 +253,39 @@
     text-align:right;
     flex-shrink:0;
   }
+  .ppts-col{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    flex-shrink:0;
+    min-width:44px;
+  }
   .prow .ppts{
     font-family:var(--mono);
     font-size:14px;
-    width:48px;
     text-align:right;
-    flex-shrink:0;
+  }
+  .prow .pproj{
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--ink-faint);
+    text-align:right;
+    margin-top:1px;
   }
   .prow-sub{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:2px;
+  }
+  .prow-subtext{
     font-family:var(--mono);
     font-size:11px;
     color:var(--ink-faint);
-    padding-left:40px;
-    margin-top:3px;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
+    min-width:0;
   }
   .dual{
     display:grid;
@@ -278,60 +308,11 @@
     white-space:nowrap;
     border-bottom:1px solid var(--line);
   }
-  .drow{
-    padding:7px 10px;
-    border-bottom:1px solid var(--line);
-  }
-  .drow:last-child{border-bottom:none;}
-
   /* subtle highlight for a player whose game is currently in progress --
      inset box-shadow instead of a real border so row height/width don't shift */
   .row-live{
     background:rgba(232,179,77,0.06);
     box-shadow:inset 3px 0 0 var(--gold);
-  }
-  .dname{
-    font-size:12.5px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    min-width:0;
-    flex:1;
-  }
-  .dtop{
-    display:flex;
-    align-items:center;
-    gap:4px;
-  }
-  .dpts{
-    font-family:var(--mono);
-    font-size:12px;
-    color:var(--ink);
-    flex-shrink:0;
-  }
-  .dmeta{
-    display:flex;
-    align-items:center;
-    margin-top:2px;
-    gap:6px;
-  }
-  .dtime{
-    font-size:10px;
-    color:var(--ink-faint);
-    font-family:var(--mono);
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    margin-left:auto;
-    flex-shrink:0;
-  }
-  .dtime.live{color:var(--gold);}
-  .dtime.final{color:var(--ink-faint);}
-  .dproj{
-    font-size:10px;
-    color:var(--ink-faint);
-    font-family:var(--mono);
-    margin-top:1px;
   }
   .flags{
     display:flex;
@@ -402,14 +383,29 @@
     border-bottom:1px solid var(--line);
   }
   .swap:last-child{border-bottom:none;}
+  .swap-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
   .swap-slot{
     font-family:var(--mono);
     font-size:10px;
     color:var(--ink-faint);
     text-transform:uppercase;
     letter-spacing:0.5px;
-    margin-bottom:6px;
   }
+  .swap-dismiss{
+    background:none;
+    border:none;
+    color:var(--ink-faint);
+    font-size:10px;
+    font-family:var(--sans);
+    cursor:pointer;
+    padding:0;
+  }
+  .swap-dismiss:hover{color:var(--down);}
   .swap-row{
     display:flex;
     align-items:center;
@@ -517,6 +513,90 @@
   }
   .drift-refresh:disabled{opacity:0.5; cursor:default;}
 
+  .pdetail{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+    cursor:default;
+  }
+  .pdetail-loading{
+    font-size:11px;
+    color:var(--ink-faint);
+    padding:4px 0;
+  }
+  .pdetail-chart{
+    display:flex;
+    align-items:flex-end;
+    gap:6px;
+    height:44px;
+    margin-bottom:4px;
+  }
+  .pdetail-barcol{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    height:100%;
+    min-width:0;
+  }
+  .pdetail-bar{
+    width:100%;
+    max-width:22px;
+    background:var(--gold);
+    opacity:0.65;
+    border-radius:2px 2px 0 0;
+  }
+  .pdetail-barlabel{
+    font-size:9px;
+    color:var(--ink-faint);
+    font-family:var(--mono);
+    margin-top:3px;
+  }
+  .pdetail-touches{
+    font-size:9px;
+    color:var(--ink-dim);
+    font-family:var(--mono);
+  }
+  .pdetail-stats{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:10.5px;
+    color:var(--ink-dim);
+    font-family:var(--mono);
+    margin-bottom:4px;
+  }
+  .pdetail-trend{
+    font-size:10.5px;
+    font-family:var(--mono);
+    margin-bottom:4px;
+  }
+  .pdetail-trend.up{color:var(--up);}
+  .pdetail-trend.down{color:var(--down);}
+  .pdetail-compare{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:11px;
+    color:var(--ink-dim);
+    font-family:var(--mono);
+    margin-bottom:4px;
+  }
+  .pdetail-compare b{color:var(--ink); font-weight:600;}
+  .pdetail-compare .badge{margin-left:3px;}
+  .pdetail-muted{color:var(--ink-faint);}
+  .pdetail-proj{
+    font-size:11px;
+    color:var(--ink-dim);
+    font-family:var(--mono);
+    margin-bottom:8px;
+  }
+  .pdetail-proj b{color:var(--ink); font-weight:600;}
+  .pdetail-proj .badge{margin-left:4px;}
+  .pdetail-proj.out b{color:var(--down);}
+  .pdetail-proj.out .badge{background:rgba(192,112,90,0.18); color:var(--down);}
+
   .refresh{
     text-align:center;
     margin-top:20px;
@@ -568,6 +648,7 @@ let leagues = [];
 let leagueBundles = [];
 let activeLeagueIndex = 0;
 let benchOpen = true;
+let expandedPids = new Set(); // pids with their detail card currently open
 let playersMap = null;
 let playersLoading = null;
 let scheduleByTeam = {};
@@ -1220,8 +1301,10 @@ function diffLineup(rosterPositions, currentStarterIds, optimalAssignment, playe
     const gain = incoming.proj_pts - (outgoing ? outgoing.proj_pts : 0);
     changes.push({
       slot,
+      benchId: outgoing ? outgoing.id : null,
       bench: outgoing ? outgoing.name : '(empty)',
       benchPts: outgoing ? outgoing.proj_pts : 0,
+      startId: incoming.id,
       start: incoming.name,
       startPts: incoming.proj_pts,
       startSource: incoming.source,
@@ -1236,6 +1319,34 @@ function diffLineup(rosterPositions, currentStarterIds, optimalAssignment, playe
     gain: optimalPts - currentPts,
     message: `${changes.length} change${changes.length > 1 ? 's' : ''} recommended, +${fmtPts(optimalPts - currentPts)} pts`,
   };
+}
+
+// --- dismissed suggestions --------------------------------------------
+// "Ignore this suggestion" persists per (week, league, the two players
+// involved, AND their point values) -- so if you dismiss a swap and the
+// projections later shift enough to change the numbers, it's treated as a
+// genuinely different suggestion and reappears rather than staying hidden
+// forever on stale reasoning. Naturally resets every week since `week` is
+// part of the key.
+const DISMISSED_SUGGESTIONS_KEY = 'ffd_dismissed_suggestions_v1';
+
+function loadDismissedSuggestions(){
+  try{
+    const raw = localStorage.getItem(DISMISSED_SUGGESTIONS_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  }catch(e){ return new Set(); }
+}
+
+function saveDismissedSuggestions(set){
+  try{ localStorage.setItem(DISMISSED_SUGGESTIONS_KEY, JSON.stringify([...set])); }catch(e){ /* storage full/unavailable */ }
+}
+
+function suggestionKey(leagueId, change){
+  return [
+    season, week, leagueId,
+    change.benchId || 'empty', change.startId,
+    change.benchPts.toFixed(1), change.startPts.toFixed(1),
+  ].join(':');
 }
 
 function buildSuggestion(league, myRoster, myEntry){
@@ -1270,6 +1381,24 @@ function buildSuggestion(league, myRoster, myEntry){
   const result = diffLineup(rosterPositions, myEntry.starters, assignment, playersById);
   result.lockedStarterCount = forcedStarterIds.size;
   result.lockedOutBenchCount = lockedOutBenchCount;
+
+  // drop any changes the user has explicitly ignored, then recompute the
+  // displayed total/message from what's actually still showing -- the
+  // header shouldn't claim a gain from a swap we're no longer rendering
+  const dismissed = loadDismissedSuggestions();
+  const keyedChanges = result.changes.map(c => ({...c, key: suggestionKey(league.league_id, c)}));
+  const visibleChanges = keyedChanges.filter(c => !dismissed.has(c.key));
+  const dismissedCount = keyedChanges.length - visibleChanges.length;
+  const visibleGain = visibleChanges.reduce((sum, c) => sum + c.gain, 0);
+
+  result.changes = visibleChanges;
+  result.dismissedCount = dismissedCount;
+  result.gain = visibleGain;
+  result.message = visibleChanges.length === 0
+    ? (dismissedCount > 0
+        ? `${dismissedCount} suggestion${dismissedCount > 1 ? 's' : ''} dismissed`
+        : 'Your lineup is already optimal.')
+    : `${visibleChanges.length} change${visibleChanges.length > 1 ? 's' : ''} recommended, +${fmtPts(visibleGain)} pts`;
 
   // Mid-week drift: Sleeper's projection moving a lot since our weekly
   // baseline usually means real news (injury to this player or a
@@ -1316,7 +1445,10 @@ function suggestionHTML(result){
   }
   const rows = result.changes.map(c => `
     <div class="swap">
-      <div class="swap-slot">${escapeHtml(c.slot)}</div>
+      <div class="swap-head">
+        <div class="swap-slot">${escapeHtml(c.slot)}</div>
+        <button class="swap-dismiss" data-key="${escapeHtml(c.key)}" title="Ignore this suggestion">&times; ignore</button>
+      </div>
       <div class="swap-row">
         <div class="swap-player swap-out"><span class="swap-name">${escapeHtml(c.bench)}</span></div>
         <div class="swap-pts">${fmtPts(c.benchPts)}</div>
@@ -1345,7 +1477,7 @@ function teamProjectedTotal(entry, scoringSettings){
   let total = 0;
   let any = false;
   entry.starters.forEach(pid => {
-    const p = projectedPoints(pid, scoringSettings);
+    const p = getPlayerProjection(pid, scoringSettings).proj_pts;
     if(p !== null){
       total += p;
       any = true;
@@ -1401,26 +1533,115 @@ function lastNameOf(name){
   return parts[parts.length - 1] || name;
 }
 
-function compactRowHTML(pid, pts, scoringSettings){
+// --- player detail card (click-to-expand) -----------------------------
+// Recent-games history for the little chart + touches trend. Each Sleeper
+// stats-by-week call returns EVERY player for that week in one response, so
+// we fetch each week ONCE and reuse it for every player card that gets
+// expanded -- not one fetch per player. Free/unlimited endpoint, no credit
+// concern, so this is fetched lazily (only once the user actually expands
+// a card) and kept in memory for the rest of the session.
+let historicalStatsByWeek = {}; // week -> {pid: statLine}
+let historicalStatsLoading = null;
+const HISTORY_WEEKS = 5;
+
+function ensureHistoricalStats(){
+  const weeksNeeded = [];
+  for(let w = Math.max(1, week - HISTORY_WEEKS); w < week; w++){
+    if(!historicalStatsByWeek[w]) weeksNeeded.push(w);
+  }
+  if(weeksNeeded.length === 0) return Promise.resolve();
+  if(historicalStatsLoading) return historicalStatsLoading;
+  historicalStatsLoading = Promise.all(weeksNeeded.map(w =>
+    getJSON(`${API}/stats/nfl/regular/${season}/${w}`)
+      .then(data => { historicalStatsByWeek[w] = data; })
+      .catch(() => { historicalStatsByWeek[w] = {}; }) // mark attempted, don't retry forever this session
+  )).then(() => { historicalStatsLoading = null; });
+  return historicalStatsLoading;
+}
+
+const TOUCHES_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE']);
+
+// The sleeper/vegas comparison block -- shown regardless of whether chart
+// history exists (e.g. week 1, before any games have been played).
+function projectionCompareHTML(pid, scoringSettings){
+  const out = isPlayerOut(pid);
+  const sleeperProj = sleeperProjectionProvider(pid, scoringSettings);
+  const vegasProj = vegasProjectionProvider(pid, scoringSettings);
+
+  const rows = [];
+  if(vegasProj !== null){
+    rows.push(`<span>vegas <b>${fmtPts(vegasProj.proj_pts)}</b>${vegasProj.confidence === 'low' ? ' <span class="badge badge-low">LOW CONF</span>' : ''}</span>`);
+  }else if(oddsApiKey()){
+    rows.push(`<span class="pdetail-muted">vegas &mdash; no props posted</span>`);
+  }
+  rows.push(`<span>sleeper ${sleeperProj !== null ? `<b>${fmtPts(sleeperProj.proj_pts)}</b>` : '&mdash;'}</span>`);
+
+  const finalNote = out
+    ? `<div class="pdetail-proj out">using: <b>0</b> pts <span class="badge">OUT</span></div>`
+    : `<div class="pdetail-proj">using: <b>${fmtPts(getPlayerProjection(pid, scoringSettings).proj_pts)}</b> pts <span class="badge ${vegasProj !== null ? 'badge-vegas' : ''}">${vegasProj !== null ? 'VEGAS' : sleeperProj !== null ? 'SLEEPER' : 'NO DATA'}</span></div>`;
+
+  return `<div class="pdetail-compare">${rows.join('')}</div>${finalNote}`;
+}
+
+function playerDetailHTML(pid, scoringSettings){
+  const compareHTML = projectionCompareHTML(pid, scoringSettings);
+
+  const rangeWeeks = [];
+  for(let w = Math.max(1, week - HISTORY_WEEKS); w < week; w++) rangeWeeks.push(w);
+
+  if(rangeWeeks.length === 0){
+    return `<div class="pdetail">${compareHTML}<div class="pdetail-loading">No games played yet this season.</div></div>`;
+  }
+
+  const weeksAvailable = rangeWeeks.filter(w => historicalStatsByWeek[w]);
+  if(weeksAvailable.length === 0){
+    return `<div class="pdetail">${compareHTML}<div class="pdetail-loading">Loading recent games…</div></div>`;
+  }
+
   const info = playerLabel(pid);
-  const timing = timingBrief(info);
-  const flags = crossLeagueFlags(pid, activeLeagueIndex);
-  let badges = '';
-  if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">DBL</span>`;
-  if(flags.oppStart) badges += `<span class="flag flag-opp" title="Starting against you in your other league">OPP</span>`;
-  if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">BEN</span>`;
-  const proj = projectedPoints(pid, scoringSettings);
-  return `<div class="drow${timing.cls === 'live' ? ' row-live' : ''}">
-    <div class="dtop">
-      <div class="dname">${escapeHtml(info.name)}</div>
-      ${statusBadge(info.status)}
+  const showTouches = TOUCHES_POSITIONS.has(info.position);
+
+  const games = weeksAvailable.map(w => {
+    const s = historicalStatsByWeek[w][pid];
+    return {
+      week: w,
+      pts: s && typeof s.pts_ppr === 'number' ? s.pts_ppr : null, // null = bye/inactive/no data that week
+      touches: s ? (s.rush_att || 0) + (s.rec_tgt || 0) : 0,
+    };
+  });
+
+  const played = games.filter(g => g.pts !== null);
+  const maxPts = Math.max(1, ...played.map(g => g.pts));
+  const seasonAvg = played.length ? played.reduce((a, g) => a + g.pts, 0) / played.length : null;
+  const recentGames = played.slice(-3);
+  const recentAvg = recentGames.length ? recentGames.reduce((a, g) => a + g.pts, 0) / recentGames.length : null;
+  const touchesRecentAvg = recentGames.length ? recentGames.reduce((a, g) => a + g.touches, 0) / recentGames.length : null;
+
+  const bars = games.map(g => {
+    const h = g.pts === null ? 2 : Math.max(2, Math.round((g.pts / maxPts) * 44));
+    const title = g.pts === null ? 'Bye / no data' : `${fmtPts(g.pts)} pts, ${g.touches} touches`;
+    return `<div class="pdetail-barcol" title="${escapeHtml(title)}">
+      <div class="pdetail-bar" style="height:${h}px"></div>
+      <div class="pdetail-barlabel">W${g.week}</div>
+      ${showTouches ? `<div class="pdetail-touches">${g.pts === null ? '&mdash;' : g.touches}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  let trendNote = '';
+  if(showTouches && recentAvg !== null && seasonAvg !== null && Math.abs(recentAvg - seasonAvg) >= 3){
+    const up = recentAvg > seasonAvg;
+    trendNote = `<div class="pdetail-trend ${up ? 'up' : 'down'}">${up ? '&#9650;' : '&#9660;'} recent avg ${fmtPts(recentAvg)} vs season avg ${fmtPts(seasonAvg)}</div>`;
+  }
+
+  return `<div class="pdetail">
+    ${compareHTML}
+    <div class="pdetail-chart">${bars || ''}</div>
+    <div class="pdetail-stats">
+      <span>season avg ${fmtPts(seasonAvg)}</span>
+      <span>last 3 avg ${fmtPts(recentAvg)}</span>
+      ${showTouches ? `<span>touches (3wk) ${touchesRecentAvg === null ? '&mdash;' : touchesRecentAvg.toFixed(1)}/gm</span>` : ''}
     </div>
-    <div class="dmeta">
-      <span class="dpts">${fmtPts(pts)}</span>
-      ${badges ? `<div class="flags">${badges}</div>` : ''}
-      <span class="dtime ${timing.cls}">${escapeHtml(timing.text)}</span>
-    </div>
-    ${proj !== null ? `<div class="dproj">${fmtPts(proj)}</div>` : ''}
+    ${trendNote}
   </div>`;
 }
 
@@ -1636,8 +1857,10 @@ function renderLeague(league, rosters, users, matchups, summary){
 
   if(myEntry && myEntry.starters){
     myEntry.starters.forEach((pid, i) => {
+      const info = playerLabel(pid);
       const pts = myEntry.starters_points ? myEntry.starters_points[i] : undefined;
-      myCompact += compactRowHTML(pid, pts, league.scoring_settings);
+      const flags = crossLeagueFlags(pid, activeLeagueIndex);
+      myCompact += prowHTML('', info, pts, flags, pid, league.scoring_settings);
     });
     const benchIds = (myRoster.players || []).filter(pid => !myEntry.starters.includes(pid));
     myBenchCount = benchIds.length;
@@ -1645,13 +1868,15 @@ function renderLeague(league, rosters, users, matchups, summary){
       const info = playerLabel(pid);
       const pts = myEntry.players_points ? myEntry.players_points[pid] : undefined;
       const flags = crossLeagueFlags(pid, activeLeagueIndex);
-      benchRows += prowHTML('', info, pts, flags, pid);
+      benchRows += prowHTML('', info, pts, flags, pid, league.scoring_settings);
     });
   }
   if(oppEntry && oppEntry.starters){
     oppEntry.starters.forEach((pid, i) => {
+      const info = playerLabel(pid);
       const pts = oppEntry.starters_points ? oppEntry.starters_points[i] : undefined;
-      oppCompact += compactRowHTML(pid, pts, league.scoring_settings);
+      const flags = crossLeagueFlags(pid, activeLeagueIndex);
+      oppCompact += prowHTML('', info, pts, flags, pid, league.scoring_settings);
     });
     const oppBenchIds = (oppRoster && oppRoster.players || []).filter(pid => !oppEntry.starters.includes(pid));
     oppBenchCount = oppBenchIds.length;
@@ -1659,7 +1884,7 @@ function renderLeague(league, rosters, users, matchups, summary){
       const info = playerLabel(pid);
       const pts = oppEntry.players_points ? oppEntry.players_points[pid] : undefined;
       const flags = crossLeagueFlags(pid, activeLeagueIndex);
-      oppBenchRows += prowHTML('', info, pts, flags, pid);
+      oppBenchRows += prowHTML('', info, pts, flags, pid, league.scoring_settings);
     });
   }
 
@@ -1693,11 +1918,11 @@ function renderLeague(league, rosters, users, matchups, summary){
     <div class="dual">
       <div class="dcol">
         <div class="dcol-head">${escapeHtml(myName)}</div>
-        ${myCompact || '<div class="drow"><div class="dname">No lineup set</div></div>'}
+        ${myCompact || '<div class="prow"><div class="pname">No lineup set</div></div>'}
       </div>
       <div class="dcol">
         <div class="dcol-head">${escapeHtml(oppName)}</div>
-        ${oppCompact || '<div class="drow"><div class="dname">—</div></div>'}
+        ${oppCompact || '<div class="prow"><div class="pname">&mdash;</div></div>'}
       </div>
     </div>
 
@@ -1734,9 +1959,33 @@ function renderLeague(league, rosters, users, matchups, summary){
       showLeague(activeLeagueIndex);
     };
   });
+
+  document.querySelectorAll('.swap-dismiss').forEach(btn => {
+    btn.onclick = () => {
+      const dismissed = loadDismissedSuggestions();
+      dismissed.add(btn.dataset.key);
+      saveDismissedSuggestions(dismissed);
+      renderTabs();
+      showLeague(activeLeagueIndex);
+    };
+  });
+
+  document.querySelectorAll('.prow[data-pid]').forEach(rowEl => {
+    rowEl.onclick = async () => {
+      const pid = rowEl.dataset.pid;
+      if(expandedPids.has(pid)){
+        expandedPids.delete(pid);
+      }else{
+        expandedPids.add(pid);
+        await ensureHistoricalStats().catch(() => {});
+      }
+      renderTabs();
+      showLeague(activeLeagueIndex);
+    };
+  });
 }
 
-function prowHTML(label, info, pts, flags, pid){
+function prowHTML(label, info, pts, flags, pid, scoringSettings){
   flags = flags || {};
   let badges = '';
   if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">DBL</span>`;
@@ -1744,16 +1993,26 @@ function prowHTML(label, info, pts, flags, pid){
   if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">BEN</span>`;
   const sub = gameSubline(pid, info);
   const timing = timingBrief(info);
-  return `<div class="prow${timing.cls === 'live' ? ' row-live' : ''}">
+  const clickable = pid && pid !== '0';
+  const expanded = clickable && expandedPids.has(pid);
+  const proj = scoringSettings ? getPlayerProjection(pid, scoringSettings).proj_pts : null;
+  return `<div class="prow${timing.cls === 'live' ? ' row-live' : ''}"${clickable ? ` data-pid="${escapeHtml(pid)}"` : ''}>
     <div class="prow-top">
-      ${label ? `<div class="pos">${escapeHtml(label)}</div>` : ''}
-      <div class="pname">${escapeHtml(info.name)}</div>
-      ${statusBadge(info.status)}
-      <div class="pteam">${escapeHtml(info.team)}</div>
-      ${badges ? `<div class="flags">${badges}</div>` : ''}
-      <div class="ppts">${fmtPts(pts)}</div>
+      <div class="prow-left">
+        <div class="prow-mainline">
+          ${label ? `<div class="pos">${escapeHtml(label)}</div>` : ''}
+          <div class="pname">${escapeHtml(info.name)}</div>
+          ${badges ? `<div class="flags">${badges}</div>` : ''}
+          <div class="pteam">${escapeHtml(info.team)}</div>
+        </div>
+        ${(statusBadge(info.status) || sub) ? `<div class="prow-sub">${statusBadge(info.status)}${sub ? `<span class="prow-subtext">${escapeHtml(sub)}</span>` : ''}</div>` : ''}
+      </div>
+      <div class="ppts-col">
+        <div class="ppts">${fmtPts(pts)}</div>
+        ${proj !== null ? `<div class="pproj">${fmtPts(proj)}</div>` : ''}
+      </div>
     </div>
-    ${sub ? `<div class="prow-sub">${escapeHtml(sub)}</div>` : ''}
+    ${expanded ? playerDetailHTML(pid, scoringSettings) : ''}
   </div>`;
 }
 
