@@ -16,6 +16,7 @@
     --gold:#e8b34d;
     --up:#7fae8a;
     --down:#c0705a;
+    --rival:#8f8fd9;
     --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     --sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
@@ -282,6 +283,13 @@
     border-bottom:1px solid var(--line);
   }
   .drow:last-child{border-bottom:none;}
+
+  /* subtle highlight for a player whose game is currently in progress --
+     inset box-shadow instead of a real border so row height/width don't shift */
+  .row-live{
+    background:rgba(232,179,77,0.06);
+    box-shadow:inset 3px 0 0 var(--gold);
+  }
   .dname{
     font-size:12.5px;
     overflow:hidden;
@@ -331,19 +339,23 @@
     flex-shrink:0;
   }
   .flag{
-    width:16px;
-    height:16px;
-    border-radius:50%;
+    padding:1px 5px;
+    border-radius:4px;
     font-size:9px;
     font-family:var(--mono);
-    display:flex;
-    align-items:center;
-    justify-content:center;
     font-weight:600;
+    letter-spacing:0.2px;
+    white-space:nowrap;
+    flex-shrink:0;
   }
-  .flag-mine{background:rgba(127,174,138,0.18);color:var(--up);}
-  .flag-opp{background:rgba(192,112,90,0.18);color:var(--down);}
-  .flag-bench{background:rgba(167,164,149,0.18);color:var(--ink-faint);}
+  /* deliberately NOT reusing --up/--down/--gold here: those already mean
+     "this player's own status" (healthy-ish/out/questionable) via .pstatus.
+     These flags are a different axis (cross-league exposure), so they get
+     their own color + words instead of single letters, to stop the old
+     red "O" (opponent) from reading as the red "O" (Out) status badge. */
+  .flag-mine{background:rgba(127,174,138,0.18); color:var(--up);}
+  .flag-opp{background:rgba(143,143,217,0.2); color:var(--rival);}
+  .flag-bench{background:rgba(167,164,149,0.18); color:var(--ink-faint);}
 
   .bench-toggle{
     background:none;
@@ -359,6 +371,151 @@
   }
   .bench-wrap{display:none;}
   .bench-wrap.show{display:block;}
+
+  .suggest{
+    background:var(--card);
+    border:1px solid var(--gold);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .suggest.neutral{border-color:var(--line);}
+  .suggest-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:12px 14px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .suggest-title{
+    font-size:13px;
+    font-weight:600;
+    color:var(--gold);
+  }
+  .suggest-gain{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--up);
+  }
+  .swap{
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  .swap:last-child{border-bottom:none;}
+  .swap-slot{
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:6px;
+  }
+  .swap-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .swap-row + .swap-row{margin-top:4px;}
+  .swap-player{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+  }
+  .swap-name{
+    font-size:14px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .swap-out .swap-name{color:var(--ink-faint); text-decoration:line-through;}
+  .swap-in .swap-name{color:var(--ink); font-weight:600;}
+  .swap-pts{
+    font-family:var(--mono);
+    font-size:13px;
+    flex-shrink:0;
+    width:44px;
+    text-align:right;
+  }
+  .swap-out .swap-pts{color:var(--ink-faint);}
+  .swap-in .swap-pts{color:var(--up);}
+  .swap-arrow{
+    color:var(--ink-faint);
+    font-size:13px;
+    flex-shrink:0;
+  }
+  .badge{
+    font-family:var(--mono);
+    font-size:9px;
+    font-weight:600;
+    padding:1px 5px;
+    border-radius:4px;
+    flex-shrink:0;
+  }
+  .badge-vegas{background:rgba(127,174,138,0.18);color:var(--up);}
+  .badge-low{background:rgba(232,179,77,0.18);color:var(--gold);}
+  .suggest-empty{
+    padding:16px 14px;
+    text-align:center;
+    color:var(--ink-dim);
+    font-size:13px;
+  }
+  .suggest-empty .check{color:var(--up); margin-right:4px;}
+  .lock-note{
+    font-size:11px;
+    color:var(--ink-faint);
+    padding:6px 2px 0;
+  }
+
+  .drift-alert{
+    background:var(--card);
+    border:1px solid var(--down);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:10px;
+  }
+  .drift-head{
+    font-size:11px;
+    color:var(--down);
+    padding:10px 14px 6px;
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+  }
+  .drift-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 14px;
+    flex-wrap:wrap;
+  }
+  .drift-row:last-child{padding-bottom:10px;}
+  .drift-name{
+    font-size:13px;
+    flex:1;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .drift-change{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-dim);
+    flex-shrink:0;
+  }
+  .drift-refresh{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    padding:3px 8px;
+    border-radius:10px;
+    font-size:11px;
+    cursor:pointer;
+    font-family:var(--sans);
+    flex-shrink:0;
+  }
+  .drift-refresh:disabled{opacity:0.5; cursor:default;}
 
   .refresh{
     text-align:center;
@@ -379,13 +536,18 @@
 <body>
 
 <div class="topline">
-  <div class="who">@<span id="unameLabel">acrogers</span> <button id="changeUser">change</button></div>
+  <div class="who">@<span id="unameLabel">acrogers</span> <button id="changeUser">change</button> <button id="changeOddsKey">vegas key</button></div>
   <div class="week" id="weekLabel">—</div>
 </div>
 
 <div class="userbox" id="userbox">
   <input type="text" id="unameInput" placeholder="sleeper username" value="acrogers">
   <button id="loadUser">Load</button>
+</div>
+
+<div class="userbox" id="oddsKeyBox">
+  <input type="text" id="oddsKeyInput" placeholder="the-odds-api.com API key (optional)">
+  <button id="saveOddsKey">Save</button>
 </div>
 
 <div class="tabs" id="tabs"></div>
@@ -405,10 +567,11 @@ let week = null;
 let leagues = [];
 let leagueBundles = [];
 let activeLeagueIndex = 0;
-let benchOpen = false;
+let benchOpen = true;
 let playersMap = null;
 let playersLoading = null;
 let scheduleByTeam = {};
+let weekDateRange = null; // {from, to} ISO strings bounding THIS week's kickoffs, from ESPN's week-scoped scoreboard
 let statsMap = null;
 let projectionsMap = null;
 
@@ -464,8 +627,26 @@ async function loadGameContext(){
     fetchStatsOrProjections('projections', season, week)
   ]);
   if(espnData) scheduleByTeam = buildScheduleMap(espnData);
+  if(espnData) weekDateRange = buildWeekDateRange(espnData);
   if(statsData) statsMap = statsData;
   if(projData) projectionsMap = projData;
+}
+
+// Bounds THIS week's kickoffs (with a small buffer) so the odds-api events
+// call can be scoped to just this week instead of the whole season -- the
+// odds-api events endpoint with no date filter returns EVERY game all
+// season (verified: 270 events, not ~16), which would make team-based
+// matching alone pull odds for future weeks too.
+function buildWeekDateRange(espnData){
+  const dates = (espnData.events || [])
+    .map(ev => ev.date ? new Date(ev.date).getTime() : null)
+    .filter(t => t !== null);
+  if(dates.length === 0) return null;
+  const dayMs = 24 * 60 * 60 * 1000;
+  return {
+    from: new Date(Math.min(...dates) - dayMs).toISOString(),
+    to: new Date(Math.max(...dates) + dayMs).toISOString(),
+  };
 }
 
 const TEAM_ABBR_ALIASES = {
@@ -538,6 +719,627 @@ function projectedPoints(pid, scoringSettings){
   return any ? total : null;
 }
 
+// --- vegas odds (The Odds API) --------------------------------------------
+// Fetched at most ONCE PER WEEK, cached in localStorage keyed by
+// season+week. On every load we first check the cache; only a cache miss
+// (new week, or nothing cached yet) triggers real network calls, and even
+// then only for the games our own rostered players are actually in -- not
+// the full slate. Credits are precious on the free tier, so this is
+// deliberately conservative: no auto-refresh within a week, no polling.
+
+const ODDS_API_BASE = 'https://api.the-odds-api.com/v4';
+const ODDS_MARKETS = 'player_pass_yds,player_pass_tds,player_pass_interceptions,player_rush_yds,player_reception_yds,player_receptions,player_anytime_td';
+const VEGAS_CACHE_KEY = 'ffd_vegas_cache_v1';
+const VEGAS_RETRY_BACKOFF_MS = 30 * 60 * 1000; // don't hammer the API on repeated failures
+
+const NFL_TEAM_NAME_TO_ABBR = {
+  'Arizona Cardinals': 'ARI', 'Atlanta Falcons': 'ATL', 'Baltimore Ravens': 'BAL',
+  'Buffalo Bills': 'BUF', 'Carolina Panthers': 'CAR', 'Chicago Bears': 'CHI',
+  'Cincinnati Bengals': 'CIN', 'Cleveland Browns': 'CLE', 'Dallas Cowboys': 'DAL',
+  'Denver Broncos': 'DEN', 'Detroit Lions': 'DET', 'Green Bay Packers': 'GB',
+  'Houston Texans': 'HOU', 'Indianapolis Colts': 'IND', 'Jacksonville Jaguars': 'JAX',
+  'Kansas City Chiefs': 'KC', 'Las Vegas Raiders': 'LV', 'Los Angeles Chargers': 'LAC',
+  'Los Angeles Rams': 'LAR', 'Miami Dolphins': 'MIA', 'Minnesota Vikings': 'MIN',
+  'New England Patriots': 'NE', 'New Orleans Saints': 'NO', 'New York Giants': 'NYG',
+  'New York Jets': 'NYJ', 'Philadelphia Eagles': 'PHI', 'Pittsburgh Steelers': 'PIT',
+  'San Francisco 49ers': 'SF', 'Seattle Seahawks': 'SEA', 'Tampa Bay Buccaneers': 'TB',
+  'Tennessee Titans': 'TEN', 'Washington Commanders': 'WAS',
+};
+
+let vegasStatsMap = null; // pid -> {pass_yd,pass_td,pass_int,rush_yd,rec_yd,rec,td_prob,hasFullProps}, in-memory this session
+let vegasStatsMapKey = null; // `${season}:${week}` vegasStatsMap was loaded for -- skip re-checking cache/localStorage entirely once set
+let vegasPidToEventId = {}; // pid -> odds-api event id, so a drift-triggered refresh can target just that one game
+let nameToPidIndex = null;
+
+function oddsApiKey(){
+  return (localStorage.getItem('ffd_odds_api_key') || '').trim();
+}
+
+function loadVegasCache(){
+  try{
+    const raw = localStorage.getItem(VEGAS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function saveVegasCache(cache){
+  try{ localStorage.setItem(VEGAS_CACHE_KEY, JSON.stringify(cache)); }catch(e){ /* storage full/unavailable */ }
+}
+
+function americanToProb(price){
+  return price > 0 ? 100 / (price + 100) : -price / (-price + 100);
+}
+
+function normalizePlayerName(name){
+  return (name || '')
+    .toLowerCase()
+    .replace(/[.']/g, '')
+    .replace(/\s+(jr|sr|ii|iii|iv)\.?$/, '')
+    .trim();
+}
+
+function buildNameIndex(){
+  nameToPidIndex = {};
+  if(!playersMap) return;
+  Object.keys(playersMap).forEach(pid => {
+    const p = playersMap[pid];
+    if(!p || !p.full_name || !['QB','RB','WR','TE'].includes(p.position)) return;
+    const key = normalizePlayerName(p.full_name);
+    // on name collisions, prefer the player currently on an NFL roster
+    if(!nameToPidIndex[key] || (!playersMap[nameToPidIndex[key]].team && p.team)){
+      nameToPidIndex[key] = pid;
+    }
+  });
+}
+
+function resolvePlayerIdByName(name){
+  if(!nameToPidIndex) buildNameIndex();
+  return nameToPidIndex[normalizePlayerName(name)] || null;
+}
+
+function bestOddsBook(bookmakers){
+  const preferred = ['draftkings', 'fanduel', 'betmgm'];
+  const byKey = {};
+  (bookmakers || []).forEach(b => byKey[b.key] = b);
+  for(const k of preferred) if(byKey[k]) return byKey[k];
+  return (bookmakers && bookmakers[0]) || null;
+}
+
+// Parses one event-odds response into {pid: rawStats}, merging into statsMap.
+function mergeEventOddsIntoStatsMap(event, statsMap){
+  const book = bestOddsBook(event.bookmakers);
+  if(!book) return;
+  const byName = {};
+  const touch = name => byName[name] || (byName[name] = {pass_yd:0,pass_td:0,pass_int:0,rush_yd:0,rec_yd:0,rec:0,td_prob:0,hasFullProps:false});
+
+  (book.markets || []).forEach(market => {
+    (market.outcomes || []).forEach(o => {
+      const name = o.description;
+      if(!name) return;
+      const s = touch(name);
+      if(market.key === 'player_pass_yds' && o.name === 'Over'){ s.pass_yd = o.point; s.hasFullProps = true; }
+      else if(market.key === 'player_pass_tds' && o.name === 'Over'){ s.pass_td = o.point; }
+      else if(market.key === 'player_pass_interceptions' && o.name === 'Over'){ s.pass_int = o.point; }
+      else if(market.key === 'player_rush_yds' && o.name === 'Over'){ s.rush_yd = o.point; s.hasFullProps = true; }
+      else if(market.key === 'player_reception_yds' && o.name === 'Over'){ s.rec_yd = o.point; s.hasFullProps = true; }
+      else if(market.key === 'player_receptions' && o.name === 'Over'){ s.rec = o.point; }
+      else if(market.key === 'player_anytime_td' && o.name === 'Yes'){ s.td_prob = americanToProb(o.price); }
+    });
+  });
+
+  Object.keys(byName).forEach(name => {
+    const pid = resolvePlayerIdByName(name);
+    if(pid) statsMap[pid] = byName[name];
+  });
+}
+
+// Determines the NFL team abbreviations for every player on any of my
+// rosters across all leagues -- this bounds which games we actually need
+// odds for, instead of pulling the full week's slate.
+function myRosteredTeams(bundles){
+  const teams = new Set();
+  bundles.forEach(b => {
+    if(!b.summary || !b.summary.myRoster) return;
+    (b.summary.myRoster.players || []).forEach(pid => {
+      const p = playersMap && playersMap[pid];
+      if(p && p.team) teams.add(p.team);
+    });
+  });
+  return teams;
+}
+
+// Fetches odds for exactly the given event ids. Network calls only --
+// caller is responsible for deciding whether this should run at all.
+// Also returns which event each resolved player came from, so a later
+// injury-driven refresh can target just that one game.
+async function fetchVegasOddsForEvents(eventIds, apiKey){
+  const statsMap = {};
+  const pidToEventId = {};
+  for(const eventId of eventIds){
+    const url = `${ODDS_API_BASE}/sports/americanfootball_nfl/events/${eventId}/odds?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=${ODDS_MARKETS}&oddsFormat=american`;
+    const res = await fetch(url);
+    if(!res.ok) continue; // skip this game, don't abort the whole batch over one bad response
+    const data = await res.json();
+    const before = new Set(Object.keys(statsMap));
+    mergeEventOddsIntoStatsMap(data, statsMap);
+    Object.keys(statsMap).forEach(pid => { if(!before.has(pid)) pidToEventId[pid] = eventId; });
+  }
+  return {statsMap, pidToEventId};
+}
+
+// Top-level entry point: cache-first, at most one fetch pass per week.
+async function ensureVegasProjections(bundles){
+  const apiKey = oddsApiKey();
+  if(!apiKey){ vegasStatsMap = null; vegasStatsMapKey = null; return; }
+
+  const wantKey = `${season}:${week}`;
+  if(vegasStatsMap !== null && vegasStatsMapKey === wantKey) return; // already resolved this session, e.g. on a 1s auto-refresh tick
+
+  await ensurePlayers().catch(() => {});
+  if(!playersMap){ vegasStatsMap = null; return; }
+
+  const cache = loadVegasCache();
+  const cacheIsCurrentWeek = cache && cache.season === season && cache.week === week;
+  if(cacheIsCurrentWeek && cache.players){
+    vegasStatsMap = cache.players;
+    vegasPidToEventId = cache.pidToEventId || {};
+    vegasStatsMapKey = wantKey;
+    return;
+  }
+  if(cacheIsCurrentWeek && cache.lastAttempt && (Date.now() - cache.lastAttempt) < VEGAS_RETRY_BACKOFF_MS){
+    vegasStatsMap = cache.players || {};
+    vegasPidToEventId = cache.pidToEventId || {};
+    vegasStatsMapKey = wantKey; // recently failed for this week, back off rather than retry every load
+    return;
+  }
+
+  const teams = myRosteredTeams(bundles);
+  if(teams.size === 0){ vegasStatsMap = {}; vegasStatsMapKey = wantKey; return; }
+
+  // The events endpoint with no date filter returns the ENTIRE SEASON
+  // (verified: 270 events, not ~16), so team matching alone would pull
+  // future weeks' games too. weekDateRange (from ESPN's week-scoped
+  // scoreboard) bounds this to just this week's kickoffs.
+  if(!weekDateRange){
+    console.warn('vegas odds: no weekDateRange available, skipping to avoid an unbounded events query');
+    vegasStatsMap = {};
+    vegasStatsMapKey = wantKey;
+    return;
+  }
+
+  try{
+    const eventsUrl = `${ODDS_API_BASE}/sports/americanfootball_nfl/events?apiKey=${encodeURIComponent(apiKey)}`
+      + `&commenceTimeFrom=${encodeURIComponent(weekDateRange.from.replace(/\.\d{3}Z$/, 'Z'))}`
+      + `&commenceTimeTo=${encodeURIComponent(weekDateRange.to.replace(/\.\d{3}Z$/, 'Z'))}`;
+    const eventsRes = await fetch(eventsUrl);
+    if(!eventsRes.ok) throw new Error('events fetch failed: ' + eventsRes.status);
+    const events = await eventsRes.json();
+    let relevantEventIds = events
+      .filter(e => teams.has(NFL_TEAM_NAME_TO_ABBR[e.home_team]) || teams.has(NFL_TEAM_NAME_TO_ABBR[e.away_team]))
+      .map(e => e.id);
+
+    // hard safety cap -- a normal week is at most ~16 games total, so this
+    // should never trigger; if it does, something upstream is wrong (bad
+    // date range, bad team match) and we should NOT spend unbounded credits
+    const MAX_RELEVANT_EVENTS = 16;
+    if(relevantEventIds.length > MAX_RELEVANT_EVENTS){
+      console.warn(`vegas odds: ${relevantEventIds.length} relevant events exceeds safety cap of ${MAX_RELEVANT_EVENTS}, truncating`);
+      relevantEventIds = relevantEventIds.slice(0, MAX_RELEVANT_EVENTS);
+    }
+
+    const {statsMap, pidToEventId} = await fetchVegasOddsForEvents(relevantEventIds, apiKey);
+    vegasStatsMap = statsMap;
+    vegasPidToEventId = pidToEventId;
+    vegasStatsMapKey = wantKey;
+    saveVegasCache({season, week, fetchedAt: Date.now(), lastAttempt: Date.now(), players: statsMap, pidToEventId});
+  }catch(e){
+    console.warn('vegas odds fetch failed:', e);
+    vegasStatsMap = (cache && cache.players) || {};
+    vegasPidToEventId = (cache && cache.pidToEventId) || {};
+    vegasStatsMapKey = wantKey;
+    saveVegasCache({season, week, fetchedAt: cache ? cache.fetchedAt : null, lastAttempt: Date.now(), players: vegasStatsMap, pidToEventId: vegasPidToEventId});
+  }
+}
+
+// Re-fetches odds for just the ONE game a drifted player is in -- scoped
+// refresh so an injury-news correction costs ~6-7 credits instead of
+// re-pulling the whole week (~70-80 credits). Updates both the in-memory
+// state and the persisted weekly cache, and clears the drift flag for
+// everyone in that game since their vegas data is now current again.
+async function refreshVegasForPlayer(pid){
+  const apiKey = oddsApiKey();
+  if(!apiKey) return {ok: false, reason: 'no-key'};
+  const eventId = vegasPidToEventId[pid];
+  if(!eventId) return {ok: false, reason: 'no-event'};
+
+  try{
+    const {statsMap, pidToEventId} = await fetchVegasOddsForEvents([eventId], apiKey);
+    Object.assign(vegasStatsMap, statsMap);
+    Object.assign(vegasPidToEventId, pidToEventId);
+
+    // acknowledge drift for everyone in the refreshed game, not just pid,
+    // since their vegas numbers are now current too
+    Object.keys(pidToEventId).forEach(refreshedPid => {
+      const p = projectionsMap && projectionsMap[refreshedPid];
+      if(p && typeof p.pts_ppr === 'number' && sleeperSnapshotForWeek){
+        sleeperSnapshotForWeek.players[refreshedPid] = p.pts_ppr;
+      }
+    });
+    saveSleeperSnapshot(sleeperSnapshotForWeek);
+    saveVegasCache({season, week, fetchedAt: Date.now(), lastAttempt: Date.now(), players: vegasStatsMap, pidToEventId: vegasPidToEventId});
+    return {ok: true};
+  }catch(e){
+    console.warn('scoped vegas refresh failed:', e);
+    return {ok: false, reason: 'fetch-failed'};
+  }
+}
+
+function vegasProjectionProvider(pid, scoringSettings){
+  if(!vegasStatsMap || !scoringSettings) return null;
+  const s = vegasStatsMap[pid];
+  if(!s) return null;
+  // anytime-TD odds don't distinguish rush vs rec TDs, so average the two
+  // scoring values as a single multiplier (identical in standard leagues)
+  const tdPoints = (((scoringSettings.rush_td !== undefined ? scoringSettings.rush_td : 6)
+                    + (scoringSettings.rec_td !== undefined ? scoringSettings.rec_td : 6)) / 2);
+  const pts = s.pass_yd * (scoringSettings.pass_yd || 0)
+    + s.pass_td * (scoringSettings.pass_td || 0)
+    + s.pass_int * (scoringSettings.pass_int || 0)
+    + s.rush_yd * (scoringSettings.rush_yd || 0)
+    + s.rec_yd * (scoringSettings.rec_yd || 0)
+    + s.rec * (scoringSettings.rec || 0)
+    + s.td_prob * tdPoints;
+  return {proj_pts: Math.round(pts * 10) / 10, source: 'vegas', confidence: s.hasFullProps ? 'normal' : 'low'};
+}
+
+// --- mid-week drift detection ----------------------------------------------
+// The weekly vegas cache is a snapshot -- if news breaks mid-week (an
+// injury to this player, or to a teammate that changes their role), that
+// snapshot goes stale until the next full-week refetch. Sleeper's own
+// projections update far more often and cost nothing to check, so we use
+// THEM as the tripwire: capture a baseline the first time we see this week,
+// then compare against it on every later load. A big enough move flags the
+// player and offers a scoped single-game vegas refresh (see
+// refreshVegasForPlayer above) instead of forcing a full-week refetch.
+
+const SLEEPER_SNAPSHOT_KEY = 'ffd_sleeper_snapshot_v1';
+const DRIFT_ABS_THRESHOLD = 3;    // pts
+const DRIFT_REL_THRESHOLD = 0.25; // 25%, only applied once baseline is above noise level
+
+let sleeperSnapshotForWeek = null; // {season, week, players: {pid: pts_ppr}, capturedAt}
+
+function loadSleeperSnapshot(){
+  try{
+    const raw = localStorage.getItem(SLEEPER_SNAPSHOT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function saveSleeperSnapshot(snap){
+  if(!snap) return;
+  try{ localStorage.setItem(SLEEPER_SNAPSHOT_KEY, JSON.stringify(snap)); }catch(e){ /* storage full/unavailable */ }
+}
+
+function myRosteredPlayerIds(bundles){
+  const ids = new Set();
+  bundles.forEach(b => {
+    if(!b.summary || !b.summary.myRoster) return;
+    (b.summary.myRoster.players || []).forEach(pid => ids.add(pid));
+  });
+  return [...ids];
+}
+
+// Captures this week's baseline exactly once (first load of a new week);
+// every later call this week is then just an in-memory no-op read. Doesn't
+// touch the network -- projectionsMap is already loaded via loadGameContext.
+function ensureSleeperSnapshot(rosterPids){
+  const existing = loadSleeperSnapshot();
+  if(existing && existing.season === season && existing.week === week){
+    sleeperSnapshotForWeek = existing;
+    return;
+  }
+  const players = {};
+  rosterPids.forEach(pid => {
+    const p = projectionsMap && projectionsMap[pid];
+    if(p && typeof p.pts_ppr === 'number') players[pid] = p.pts_ppr;
+  });
+  sleeperSnapshotForWeek = {season, week, players, capturedAt: Date.now()};
+  saveSleeperSnapshot(sleeperSnapshotForWeek);
+}
+
+// Returns {baseline, current, delta} if pid's Sleeper projection has moved
+// enough since the weekly baseline to be worth flagging, else null.
+function detectDrift(pid){
+  if(!sleeperSnapshotForWeek) return null;
+  const baseline = sleeperSnapshotForWeek.players[pid];
+  const proj = projectionsMap && projectionsMap[pid];
+  const current = proj && typeof proj.pts_ppr === 'number' ? proj.pts_ppr : null;
+  if(baseline === undefined || current === null) return null;
+
+  const delta = current - baseline;
+  const meetsAbs = Math.abs(delta) >= DRIFT_ABS_THRESHOLD;
+  const meetsRel = baseline > 1 ? Math.abs(delta) >= DRIFT_REL_THRESHOLD * baseline : true;
+  if(meetsAbs && meetsRel) return {baseline, current, delta};
+  return null;
+}
+
+// --- projection providers -----------------------------------------------
+// A provider takes (pid, scoringSettings) and returns either
+// {proj_pts, source, confidence} or null (no opinion -- try the next one).
+// Providers are tried in order; the first non-null result wins. This is the
+// seam for dropping in a vegas-odds-based provider later: implement it with
+// this same signature and unshift() it onto PROJECTION_PROVIDERS so it's
+// tried before the sleeper fallback. Nothing else in the lineup optimizer
+// needs to change.
+
+function sleeperProjectionProvider(pid, scoringSettings){
+  const pts = projectedPoints(pid, scoringSettings);
+  if(pts === null) return null;
+  return {proj_pts: pts, source: 'sleeper', confidence: 'normal'};
+}
+
+const PROJECTION_PROVIDERS = [vegasProjectionProvider, sleeperProjectionProvider];
+
+// Statuses that mean "not playing" outright -- Questionable/Doubtful are
+// left to the normal projection (their odds/Sleeper number already prices
+// in the risk), but these mean zero regardless of what any cached number says.
+const OUT_STATUSES = new Set(['Out', 'IR', 'Suspended', 'PUP', 'NA']);
+
+// Checked fresh every time, never cached: a player going Out (or Sleeper's
+// own projection collapsing to 0 games-played) overrides EVERYTHING,
+// including a same-week vegas number fetched before the injury news broke.
+// Vegas isn't re-pulled fast enough mid-week to catch this on its own, and
+// there's no reason to trust/spend credits on odds for someone who's out.
+function isPlayerOut(pid){
+  const info = playerLabel(pid);
+  if(OUT_STATUSES.has(info.status)) return true;
+  const proj = projectionsMap && projectionsMap[pid];
+  if(proj && proj.gp === 0) return true;
+  return false;
+}
+
+function getPlayerProjection(pid, scoringSettings){
+  if(isPlayerOut(pid)){
+    return {proj_pts: 0, source: 'out', confidence: 'normal'};
+  }
+  for(const provider of PROJECTION_PROVIDERS){
+    const result = provider(pid, scoringSettings);
+    if(result) return result;
+  }
+  return {proj_pts: null, source: 'none', confidence: 'low'};
+}
+
+// --- lineup optimizer ------------------------------------------------------
+// Pure functions: (roster slots, players w/ proj_pts) -> best legal lineup,
+// then diffed against what's currently started. See spikes/odds-spike/
+// lineup_optimizer.py for the prototype + reasoning this was ported from.
+
+const SLOT_ELIGIBILITY = {
+  QB: ['QB'], RB: ['RB'], WR: ['WR'], TE: ['TE'], K: ['K'], DEF: ['DEF'],
+  FLEX: ['RB','WR','TE'],
+  WRRB_FLEX: ['RB','WR'],
+  REC_FLEX: ['WR','TE'],
+  SUPER_FLEX: ['QB','RB','WR','TE'],
+};
+
+function startableSlots(rosterPositions){
+  const skip = new Set(['BN','IR','TAXI']);
+  return (rosterPositions || []).filter(s => !skip.has(s));
+}
+
+// A player whose game has already kicked off (live or final) can't legally
+// be added or dropped anymore -- roster lock happens at kickoff. Reuses the
+// same scheduleByTeam data the live/final badges already use.
+function isPlayerLocked(pid){
+  const info = playerLabel(pid);
+  if(!info.team) return false;
+  const sched = scheduleByTeam[info.team];
+  if(!sched) return false;
+  return sched.state === 'in' || sched.state === 'post';
+}
+
+// Greedily fills slots from MOST to LEAST restrictive eligibility set
+// (dedicated single-position slots first, then FLEX, then SUPER_FLEX last).
+// Optimal for this "nested eligibility" slot structure: a narrower slot is
+// never starved by a broader slot grabbing a player it could've used from
+// elsewhere just as easily.
+//
+// forcedIds: players locked into their CURRENT starting slot (game already
+// underway/over) -- pinned to their existing slot before anything else is
+// assigned, and never considered for eviction.
+function optimalLineup(rosterPositions, players, forcedIds, currentStarterIds){
+  forcedIds = forcedIds || new Set();
+  const playersById = {};
+  players.forEach(p => playersById[p.id] = p);
+
+  const result = new Array(rosterPositions.length).fill(null);
+  const usedIds = new Set();
+
+  (currentStarterIds || []).forEach((pid, idx) => {
+    if(pid && forcedIds.has(pid) && playersById[pid]){
+      result[idx] = playersById[pid];
+      usedIds.add(pid);
+    }
+  });
+
+  const slotOrder = rosterPositions
+    .map((slot, idx) => ({idx, size: (SLOT_ELIGIBILITY[slot] || []).length}))
+    .sort((a, b) => a.size - b.size)
+    .map(x => x.idx)
+    .filter(idx => result[idx] === null);
+
+  const available = players.filter(p => p.proj_pts !== null && p.proj_pts !== undefined && p.proj_pts !== 0);
+
+  for(const idx of slotOrder){
+    const eligible = SLOT_ELIGIBILITY[rosterPositions[idx]] || [];
+    let best = null;
+    for(const p of available){
+      if(usedIds.has(p.id) || !eligible.includes(p.position)) continue;
+      if(!best || p.proj_pts > best.proj_pts) best = p;
+    }
+    if(best){
+      usedIds.add(best.id);
+      result[idx] = best;
+    }
+  }
+  return result;
+}
+
+// Compares who's CURRENTLY starting vs the optimizer's pick, using set
+// difference (not slot-index matching) so pure slot reshuffles among
+// players who are ALL still starting don't get misreported as swaps.
+function diffLineup(rosterPositions, currentStarterIds, optimalAssignment, playersById){
+  const currentSet = new Set(currentStarterIds.filter(pid => pid && pid !== '0'));
+  const optimalSet = new Set(optimalAssignment.filter(Boolean).map(p => p.id));
+
+  const shouldStart = [...optimalSet].filter(id => !currentSet.has(id));
+  const shouldBench = [...currentSet].filter(id => !optimalSet.has(id));
+
+  const currentPts = [...currentSet].reduce((sum, id) => sum + ((playersById[id] && playersById[id].proj_pts) || 0), 0);
+  const optimalPts = optimalAssignment.reduce((sum, p) => sum + (p ? p.proj_pts : 0), 0);
+
+  if(shouldStart.length === 0 && shouldBench.length === 0){
+    return {changes: [], currentPts, optimalPts, gain: 0, message: 'Your lineup is already optimal.'};
+  }
+
+  let shouldBenchRemaining = [...shouldBench];
+  const changes = [];
+  const incomingBySlot = [];
+  optimalAssignment.forEach((p, idx) => {
+    if(p && shouldStart.includes(p.id)) incomingBySlot.push({idx, p});
+  });
+
+  for(const {idx, p: incoming} of incomingBySlot){
+    const slot = rosterPositions[idx];
+    const originalOccupantId = currentStarterIds[idx];
+    const outgoingId = shouldBenchRemaining.includes(originalOccupantId)
+      ? originalOccupantId
+      : shouldBenchRemaining[0];
+    if(outgoingId) shouldBenchRemaining = shouldBenchRemaining.filter(id => id !== outgoingId);
+    const outgoing = outgoingId ? playersById[outgoingId] : null;
+    const gain = incoming.proj_pts - (outgoing ? outgoing.proj_pts : 0);
+    changes.push({
+      slot,
+      bench: outgoing ? outgoing.name : '(empty)',
+      benchPts: outgoing ? outgoing.proj_pts : 0,
+      start: incoming.name,
+      startPts: incoming.proj_pts,
+      startSource: incoming.source,
+      startConfidence: incoming.confidence,
+      gain,
+    });
+  }
+
+  changes.sort((a, b) => b.gain - a.gain);
+  return {
+    changes, currentPts, optimalPts,
+    gain: optimalPts - currentPts,
+    message: `${changes.length} change${changes.length > 1 ? 's' : ''} recommended, +${fmtPts(optimalPts - currentPts)} pts`,
+  };
+}
+
+function buildSuggestion(league, myRoster, myEntry){
+  if(!myRoster || !myEntry || !myEntry.starters) return null;
+  const rosterPositions = startableSlots(league.roster_positions);
+  const scoringSettings = league.scoring_settings;
+  const reserve = new Set([...(myRoster.reserve || []), ...(myRoster.taxi || [])]);
+  const currentStarterSet = new Set(myEntry.starters.filter(pid => pid && pid !== '0'));
+
+  const players = (myRoster.players || [])
+    .filter(pid => !reserve.has(pid))
+    .map(pid => {
+      const info = playerLabel(pid);
+      const proj = getPlayerProjection(pid, scoringSettings);
+      return {
+        id: pid, name: info.name, position: info.position,
+        proj_pts: proj.proj_pts, source: proj.source, confidence: proj.confidence,
+        locked: isPlayerLocked(pid), isCurrentStarter: currentStarterSet.has(pid),
+      };
+    });
+  const playersById = {};
+  players.forEach(p => playersById[p.id] = p);
+
+  // locked starters can't be benched (game underway/over); locked bench
+  // players can't be added (missed the roster lock) -- drop them from the
+  // pool entirely so the optimizer can never suggest them.
+  const eligiblePool = players.filter(p => !p.locked || p.isCurrentStarter);
+  const forcedStarterIds = new Set(players.filter(p => p.locked && p.isCurrentStarter).map(p => p.id));
+  const lockedOutBenchCount = players.filter(p => p.locked && !p.isCurrentStarter).length;
+
+  const assignment = optimalLineup(rosterPositions, eligiblePool, forcedStarterIds, myEntry.starters);
+  const result = diffLineup(rosterPositions, myEntry.starters, assignment, playersById);
+  result.lockedStarterCount = forcedStarterIds.size;
+  result.lockedOutBenchCount = lockedOutBenchCount;
+
+  // Mid-week drift: Sleeper's projection moving a lot since our weekly
+  // baseline usually means real news (injury to this player or a
+  // teammate). "Out"/gp=0 is already forced to 0 pts elsewhere and so
+  // already fixes itself in the optimizer above -- this catches the softer
+  // case (Questionable, role change) where a stale cached vegas number
+  // might not reflect it yet.
+  result.driftAlerts = players
+    .map(p => {
+      const drift = detectDrift(p.id);
+      if(!drift) return null;
+      return {pid: p.id, name: p.name, baseline: drift.baseline, current: drift.current, delta: drift.delta, eventId: vegasPidToEventId[p.id] || null};
+    })
+    .filter(Boolean);
+
+  return result;
+}
+
+function lockNoteHTML(result){
+  const locked = (result.lockedStarterCount || 0) + (result.lockedOutBenchCount || 0);
+  if(!locked) return '';
+  return `<div class="lock-note">${locked} player${locked > 1 ? 's' : ''} already locked (game started/final) &mdash; excluded from suggestions</div>`;
+}
+
+function driftHTML(driftAlerts){
+  if(!driftAlerts || driftAlerts.length === 0) return '';
+  const rows = driftAlerts.map(d => `
+    <div class="drift-row">
+      <span class="drift-name">${escapeHtml(d.name)}</span>
+      <span class="drift-change">${fmtPts(d.baseline)} &rarr; ${fmtPts(d.current)} pts</span>
+      ${d.eventId ? `<button class="drift-refresh" data-pid="${escapeHtml(d.pid)}">refresh vegas</button>` : ''}
+    </div>`).join('');
+  return `<div class="drift-alert">
+    <div class="drift-head">projection moved since last check &mdash; possible injury news</div>
+    ${rows}
+  </div>`;
+}
+
+function suggestionHTML(result){
+  if(!result) return '';
+  const drift = driftHTML(result.driftAlerts);
+  if(result.changes.length === 0){
+    return `${drift}<div class="suggest neutral"><div class="suggest-empty"><span class="check">&#10003;</span> ${escapeHtml(result.message)}</div></div>${lockNoteHTML(result)}`;
+  }
+  const rows = result.changes.map(c => `
+    <div class="swap">
+      <div class="swap-slot">${escapeHtml(c.slot)}</div>
+      <div class="swap-row">
+        <div class="swap-player swap-out"><span class="swap-name">${escapeHtml(c.bench)}</span></div>
+        <div class="swap-pts">${fmtPts(c.benchPts)}</div>
+      </div>
+      <div class="swap-row">
+        <span class="swap-arrow">&#8627;</span>
+        <div class="swap-player swap-in">
+          <span class="swap-name">${escapeHtml(c.start)}</span>
+          ${c.startSource === 'vegas' ? '<span class="badge badge-vegas">VEGAS</span>' : ''}
+          ${c.startConfidence === 'low' ? '<span class="badge badge-low">LOW CONF</span>' : ''}
+        </div>
+        <div class="swap-pts">${fmtPts(c.startPts)}</div>
+      </div>
+    </div>`).join('');
+  return `${drift}<div class="suggest">
+    <div class="suggest-head">
+      <div class="suggest-title">${result.changes.length} change${result.changes.length > 1 ? 's' : ''} recommended</div>
+      <div class="suggest-gain">+${fmtPts(result.gain)} pts</div>
+    </div>
+    ${rows}
+  </div>${lockNoteHTML(result)}`;
+}
+
 function teamProjectedTotal(entry, scoringSettings){
   if(!entry || !entry.starters || !scoringSettings) return null;
   let total = 0;
@@ -604,11 +1406,11 @@ function compactRowHTML(pid, pts, scoringSettings){
   const timing = timingBrief(info);
   const flags = crossLeagueFlags(pid, activeLeagueIndex);
   let badges = '';
-  if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">S</span>`;
-  if(flags.oppStart) badges += `<span class="flag flag-opp" title="Starting against you in your other league">O</span>`;
-  if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">B</span>`;
+  if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">DBL</span>`;
+  if(flags.oppStart) badges += `<span class="flag flag-opp" title="Starting against you in your other league">OPP</span>`;
+  if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">BEN</span>`;
   const proj = projectedPoints(pid, scoringSettings);
-  return `<div class="drow">
+  return `<div class="drow${timing.cls === 'live' ? ' row-live' : ''}">
     <div class="dtop">
       <div class="dname">${escapeHtml(info.name)}</div>
       ${statusBadge(info.status)}
@@ -723,6 +1525,8 @@ async function loadAllBundles(opts){
     loadGameContext().catch(() => {})
   ]);
   leagueBundles = results;
+  ensureSleeperSnapshot(myRosteredPlayerIds(results));
+  await ensureVegasProjections(results).catch(() => {});
   if(!silent) await ensurePlayers().catch(()=>{});
 }
 
@@ -821,11 +1625,14 @@ function computeSummary(league, rosters, users, matchups){
 }
 
 function renderLeague(league, rosters, users, matchups, summary){
-  const {myRoster, myEntry, oppEntry, myName, oppName, myUsername, oppUsername, myPts, oppPts, myClass, oppClass} = summary;
+  const {myRoster, myEntry, oppEntry, oppRoster, myName, oppName, myUsername, oppUsername, myPts, oppPts, myClass, oppClass} = summary;
 
   let myCompact = '';
   let oppCompact = '';
   let benchRows = '';
+  let oppBenchRows = '';
+  let myBenchCount = 0;
+  let oppBenchCount = 0;
 
   if(myEntry && myEntry.starters){
     myEntry.starters.forEach((pid, i) => {
@@ -833,11 +1640,12 @@ function renderLeague(league, rosters, users, matchups, summary){
       myCompact += compactRowHTML(pid, pts, league.scoring_settings);
     });
     const benchIds = (myRoster.players || []).filter(pid => !myEntry.starters.includes(pid));
+    myBenchCount = benchIds.length;
     benchIds.forEach(pid => {
       const info = playerLabel(pid);
       const pts = myEntry.players_points ? myEntry.players_points[pid] : undefined;
       const flags = crossLeagueFlags(pid, activeLeagueIndex);
-      benchRows += prowHTML('BN', info, pts, flags, pid);
+      benchRows += prowHTML('', info, pts, flags, pid);
     });
   }
   if(oppEntry && oppEntry.starters){
@@ -845,7 +1653,17 @@ function renderLeague(league, rosters, users, matchups, summary){
       const pts = oppEntry.starters_points ? oppEntry.starters_points[i] : undefined;
       oppCompact += compactRowHTML(pid, pts, league.scoring_settings);
     });
+    const oppBenchIds = (oppRoster && oppRoster.players || []).filter(pid => !oppEntry.starters.includes(pid));
+    oppBenchCount = oppBenchIds.length;
+    oppBenchIds.forEach(pid => {
+      const info = playerLabel(pid);
+      const pts = oppEntry.players_points ? oppEntry.players_points[pid] : undefined;
+      const flags = crossLeagueFlags(pid, activeLeagueIndex);
+      oppBenchRows += prowHTML('', info, pts, flags, pid);
+    });
   }
+
+  const suggestion = buildSuggestion(league, myRoster, myEntry);
 
   el('content').innerHTML = `
     <div class="scorecard">
@@ -868,6 +1686,9 @@ function renderLeague(league, rosters, users, matchups, summary){
       </div>
     </div>
 
+    <div class="section-label">suggested lineup</div>
+    ${suggestionHTML(suggestion)}
+
     <div class="section-label">starters</div>
     <div class="dual">
       <div class="dcol">
@@ -880,9 +1701,18 @@ function renderLeague(league, rosters, users, matchups, summary){
       </div>
     </div>
 
-    <button class="bench-toggle" id="benchToggle">${benchOpen ? '▾' : '▸'} bench (${(myRoster.players||[]).length - (myEntry && myEntry.starters ? myEntry.starters.length : 0)})</button>
+    <button class="bench-toggle" id="benchToggle">${benchOpen ? '▾' : '▸'} bench</button>
     <div class="bench-wrap${benchOpen ? ' show' : ''}" id="benchWrap">
-      <div class="plist">${benchRows || ''}</div>
+      <div class="dual">
+        <div class="dcol">
+          <div class="dcol-head">${escapeHtml(myName)} bench (${myBenchCount})</div>
+          ${benchRows || '<div class="prow"><div class="pname">Empty</div></div>'}
+        </div>
+        <div class="dcol">
+          <div class="dcol-head">${escapeHtml(oppName)} bench (${oppBenchCount})</div>
+          ${oppBenchRows || '<div class="prow"><div class="pname">Empty</div></div>'}
+        </div>
+      </div>
     </div>
   `;
 
@@ -893,18 +1723,30 @@ function renderLeague(league, rosters, users, matchups, summary){
     wrap.classList.toggle('show', benchOpen);
     toggle.textContent = toggle.textContent.replace(benchOpen ? '▸' : '▾', benchOpen ? '▾' : '▸');
   };
+
+  document.querySelectorAll('.drift-refresh').forEach(btn => {
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.textContent = 'refreshing…';
+      const result = await refreshVegasForPlayer(btn.dataset.pid);
+      if(!result.ok) btn.textContent = 'failed, try again';
+      renderTabs();
+      showLeague(activeLeagueIndex);
+    };
+  });
 }
 
 function prowHTML(label, info, pts, flags, pid){
   flags = flags || {};
   let badges = '';
-  if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">S</span>`;
-  if(flags.oppStart) badges += `<span class="flag flag-opp" title="Starting against you in your other league">O</span>`;
-  if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">B</span>`;
+  if(flags.mineStart) badges += `<span class="flag flag-mine" title="Also starting on your other team">DBL</span>`;
+  if(flags.oppStart) badges += `<span class="flag flag-opp" title="Starting against you in your other league">OPP</span>`;
+  if(flags.mineBench) badges += `<span class="flag flag-bench" title="On your bench in your other league">BEN</span>`;
   const sub = gameSubline(pid, info);
-  return `<div class="prow">
+  const timing = timingBrief(info);
+  return `<div class="prow${timing.cls === 'live' ? ' row-live' : ''}">
     <div class="prow-top">
-      <div class="pos">${escapeHtml(label)}</div>
+      ${label ? `<div class="pos">${escapeHtml(label)}</div>` : ''}
       <div class="pname">${escapeHtml(info.name)}</div>
       ${statusBadge(info.status)}
       <div class="pteam">${escapeHtml(info.team)}</div>
@@ -930,6 +1772,26 @@ el('loadUser').onclick = () => {
     username = v;
     el('userbox').classList.remove('show');
     loadUserAndLeagues();
+  }
+};
+el('changeOddsKey').onclick = () => {
+  el('oddsKeyInput').value = oddsApiKey();
+  el('oddsKeyBox').classList.toggle('show');
+};
+el('saveOddsKey').onclick = async () => {
+  const v = el('oddsKeyInput').value.trim();
+  if(v) localStorage.setItem('ffd_odds_api_key', v);
+  else localStorage.removeItem('ffd_odds_api_key');
+  // key changed -- drop any cached state so the next load re-evaluates
+  // with the new key instead of reusing a stale miss/backoff
+  localStorage.removeItem(VEGAS_CACHE_KEY);
+  vegasStatsMap = null;
+  vegasStatsMapKey = null;
+  el('oddsKeyBox').classList.remove('show');
+  if(leagues.length){
+    await loadAllBundles();
+    renderTabs();
+    showLeague(activeLeagueIndex);
   }
 };
 el('refreshBtn').onclick = async () => {
